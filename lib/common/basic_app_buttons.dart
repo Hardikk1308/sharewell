@@ -5,21 +5,31 @@ class BasicAppButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const BasicAppButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
+
       onPressed: onPressed,
-      child: Text(text,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          )),
       style: ElevatedButton.styleFrom(
+        elevation: 6,
+        backgroundColor: Colors.blue,
+        minimumSize: const Size(300, 50),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 20,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
