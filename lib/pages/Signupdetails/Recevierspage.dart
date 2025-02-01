@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shareweel_app/constant/App_Colour.dart';
 
-class Userdetails extends StatelessWidget {
-  const Userdetails({super.key});
+class Receviers extends StatelessWidget {
+  const Receviers({super.key});
 
   @override
   Widget build(BuildContext context) {

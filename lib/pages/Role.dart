@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shareweel_app/common/basic_app_buttons.dart';
-import 'package:shareweel_app/pages/Details_page.dart';
+import 'package:shareweel_app/pages/Signupdetails/Donarspage.dart';
+import 'package:shareweel_app/pages/Signupdetails/Recevierspage.dart';
+import 'package:shareweel_app/pages/Signupdetails/Volunteerspage.dart';
 
 class Role extends StatefulWidget {
   const Role({super.key});
@@ -72,13 +74,9 @@ class _RoleState extends State<Role> {
               ],
             ),
             Spacer(),
-
-           
           ],
         ),
-        
       ),
-
     );
   }
 
@@ -86,7 +84,6 @@ class _RoleState extends State<Role> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      // appBar: AppBar(title: Text("Select Role")),
       body: Column(
         children: [
           SizedBox(height: 50),
@@ -102,26 +99,36 @@ class _RoleState extends State<Role> {
                     "I have something to donate to the needy", "Donor"),
                 buildSelectableContainer(
                     "Receiver", "I am a charitable organization", "Receiver"),
-                buildSelectableContainer("Volunteer",
-                    "Wanted to help the needy by volunteering", "Volunteer"),
+                buildSelectableContainer(
+                    "Volunteer",
+                    "Wanted to help the needy by volunteering",
+                    "Volunteer"),
               ],
             ),
           ),
           SizedBox(height: 300),
-           BasicAppButton(
-              text: 'Continue',      
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Userdetails(),
-                  ),
-                );
-              },
-            )
+          BasicAppButton(
+            text: 'Continue',
+            onPressed: () {
+              Widget nextPage;
+              if (selectedOption == "Donor") {
+                nextPage = DonorPage();
+              } else if (selectedOption == "Receiver") {
+                nextPage = Receviers();
+              } else {
+                nextPage = Volunteers();
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => nextPage,
+                ),
+              );
+            },
+          ),
         ],
       ),
-      
     );
   }
 }
