@@ -63,98 +63,108 @@ class _LoginpageState extends State<Loginpage> {
         body: SingleChildScrollView(
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image(
-                  image: AssetImage('assets/images/login.png'),
-                ),
-                const Text(
-                  "Welcome back!",
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Image(
+                      image: AssetImage('assets/images/login.png'),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                CustomFormField(
-                  icon: Icons.email,
-                  labelText: 'Email',
-                  hintText: 'Enter your email',
-                  controller: emailController,
-                  validator: _validateEmail, // Updated validation
-                ),
-                const SizedBox(height: 20),
-                CustomFormField(
-                  icon: Icons.lock,
-                  labelText: 'Password',
-                  hintText: 'Enter your password',
-                  obscureText: true,
-                  controller: passwordController,
-                  validator: _validatePassword, // Updated validation
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _isChecked,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _isChecked = value!;
-                          });
-                        },
-                      ),
-                      Text(
-                        'Remember me',
-                        style: TextStyle(color: Colors.black, fontSize: 16),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          'Forgot Password?',
-                          style: TextStyle(color: Colors.blue, fontSize: 16),
+                  const Text(
+                    "Welcome back!",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  CustomFormField(
+                    Keyboard: TextInputType.emailAddress,
+              
+                    icon: Icons.email,
+                    labelText: 'Email',
+                    hintText: 'Enter your email',
+                    controller: emailController,
+                    validator: _validateEmail, // Updated validation
+                  ),
+                  const SizedBox(height: 20),
+                  CustomFormField(
+                    Keyboard: TextInputType.text,
+                    icon: Icons.lock,
+                    labelText: 'Password',
+                    hintText: 'Enter your password',
+                    obscureText: true,
+                    controller: passwordController,
+                    validator: _validatePassword, // Updated validation
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: _isChecked,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _isChecked = value!;
+                            });
+                          },
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                BasicAppButton(
-                  text: 'Login',
-                  onPressed: () async {
-                    await _login();
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 90.0),
-                  child: GestureDetector(
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const Signup())),
-                    child: RichText(
-                        text: const TextSpan(
-                      text: 'Don\'t have an account? ',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: 'Signup',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
+                        Text(
+                          'Remember me',
+                          style: TextStyle(color: Colors.black, fontSize: 16),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            'Forgot Password?',
+                            style:
+                                TextStyle(color: Colors.deepPurple, fontSize: 16),
                           ),
                         ),
                       ],
-                    )),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  BasicAppButton(
+                    text: 'Login',
+                    onPressed: () async {
+                      await _login();
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 90.0),
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Signup())),
+                      child: RichText(
+                          text: const TextSpan(
+                        text: 'Don\'t have an account? ',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400),
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: 'Signup',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.deepPurple,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ],
+                      )),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

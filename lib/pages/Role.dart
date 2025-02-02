@@ -114,7 +114,7 @@ class _RoleState extends State<Role> {
               if (selectedOption == "Donor") {
                 nextPage = DonorPage();
               } else if (selectedOption == "Receiver") {
-                nextPage = Receviers();
+                nextPage = ReceiversPage();
               } else {
                 nextPage = Volunteers();
               }

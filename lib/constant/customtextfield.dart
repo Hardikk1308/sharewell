@@ -8,6 +8,7 @@ class CustomFormField extends StatefulWidget {
   final String labelText;
   final String hintText;
   final bool obscureText;
+  final TextInputType Keyboard ;
   final IconData icon;
   final TextEditingController controller;
   final String? Function(String?)? validator;
@@ -19,11 +20,11 @@ class CustomFormField extends StatefulWidget {
     this.obscureText = false,
     required this.controller,
     this.validator,
-    required this.icon,
+    required this.icon, required this.Keyboard,
   });
   final border = OutlineInputBorder(
     borderSide: BorderSide(color: Colors.black),
-    borderRadius: BorderRadius.circular(15.0),
+    borderRadius: BorderRadius.circular(10.0),
   );
 
   @override
@@ -48,8 +49,9 @@ class _CustomFormFieldState extends State<CustomFormField> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: TextFormField(
+        keyboardType: widget.Keyboard,
         controller: widget.controller,
         obscureText: _obscureText,
         decoration: kTextFormFieldDecoration.copyWith(

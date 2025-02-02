@@ -90,6 +90,8 @@ class _SignupState extends State<Signup> {
                 ),
                 const SizedBox(height: 20),
                 CustomFormField(
+                  Keyboard: TextInputType.emailAddress,
+
                   icon: Icons.email,
                   labelText: 'Email',
                   hintText: 'Enter your email',
@@ -108,6 +110,8 @@ class _SignupState extends State<Signup> {
                 ),
                 const SizedBox(height: 20),
                 CustomFormField(
+                  Keyboard: TextInputType.text,
+
                   icon: Icons.lock,
                   labelText: 'Password',
                   hintText: 'Enter your password',
@@ -125,6 +129,7 @@ class _SignupState extends State<Signup> {
                 ),
                 const SizedBox(height: 20),
                 CustomFormField(
+                  Keyboard: TextInputType.text,
                   icon: Icons.lock,
                   labelText: 'Confirm Password',
                   hintText: 'Confirm password',
@@ -145,12 +150,7 @@ class _SignupState extends State<Signup> {
                   text: 'Signup',
                   onPressed: _signup,
                 ),
-                const Divider(
-                  color: Colors.black54,
-                  height: 40,
-                  indent: 20,
-                  endIndent: 20,
-                ),
+                SizedBox(height: 20),
                 GestureDetector(
                   onTap: () async {
                     await signupwithgoogle();
@@ -161,18 +161,10 @@ class _SignupState extends State<Signup> {
                   },
                   child: Container(
                     height: 45,
-                    width: 200,
+                    width: 300,
                     decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                       borderRadius: BorderRadius.circular(10),
-                      color: Colors.white,
+                      color: Colors.black.withOpacity(0.1),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -192,7 +184,7 @@ class _SignupState extends State<Signup> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 30.0),
+                  padding: const EdgeInsets.only(top: 50.0),
                   child: GestureDetector(
                     onTap: () => Navigator.push(
                         context,
@@ -210,7 +202,7 @@ class _SignupState extends State<Signup> {
                           text: 'Login',
                           style: TextStyle(
                             fontSize: 15,
-                            color: Colors.blue,
+                            color: Colors.deepPurple,
                             decoration: TextDecoration.underline,
                           ),
                         ),
