@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shareweel_app/common/basic_app_buttons.dart';
-import 'package:shareweel_app/pages/Signupdetails/Donarspage.dart';
-import 'package:shareweel_app/pages/Signupdetails/Recevierspage.dart';
-import 'package:shareweel_app/pages/Signupdetails/Volunteerspage.dart';
+
+import '../common/basic_app_buttons.dart';
+import 'Signupdetails/Donarspage.dart';
+import 'Signupdetails/Recevierspage.dart';
+import 'Signupdetails/Volunteerspage.dart';
+
 
 class Role extends StatefulWidget {
   const Role({super.key});

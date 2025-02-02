@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shareweel_app/constant/App_Colour.dart';
+import '../../constant/App_Colour.dart';
 
 class DonorPage extends StatelessWidget {
   const DonorPage({super.key});

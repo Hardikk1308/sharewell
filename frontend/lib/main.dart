@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shareweel_app/pages/Homepage.dart';
 import 'auth/signup.dart';
 import 'firebase_options.dart';
+import 'pages/Homepage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shareweel_app/Forms/Resturants.dart';
+import '../../Forms/Resturants.dart';
 import '../../Forms/individual.dart';
 import '../../common/Cards/Card 1.dart';
 import '../../constant/App_Colour.dart';

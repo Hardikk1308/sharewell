@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shareweel_app/common/basic_app_buttons.dart';
-import 'package:shareweel_app/constant/App_Colour.dart';
-import 'package:shareweel_app/pages/Homepage.dart';
-import 'package:shareweel_app/pages/Role.dart';
+import '../common/basic_app_buttons.dart';
+import '../constant/App_Colour.dart';
 import '../constant/customtextfield.dart';
+import '../pages/Homepage.dart';
+import '../pages/Role.dart';
 import 'login.dart';
 
 class Signup extends StatefulWidget {

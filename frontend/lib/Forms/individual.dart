@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shareweel_app/constant/App_Colour.dart';
-import 'package:shareweel_app/constant/customtextfield.dart';
-import 'package:shareweel_app/pages/Homepage.dart';
-
 import '../common/basic_app_buttons.dart';
+import '../constant/App_Colour.dart';
+import '../constant/customtextfield.dart';
+import '../pages/Homepage.dart';
 
 
 class IndividualForm extends StatelessWidget {
@@ -46,7 +45,7 @@ class IndividualForm extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  elevation: 8,
+                  elevation: 6,
                   backgroundColor: AppColors.background,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
