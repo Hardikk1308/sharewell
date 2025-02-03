@@ -206,7 +206,7 @@ class IndividualForm extends StatelessWidget {
             height: 5,
           ),
           CustomFormField(
-            Keyboard: TextInputType.number,
+            Keyboard: TextInputType.text,
             labelText: 'City',
             hintText: 'Enter your city',
             controller: CityController,
