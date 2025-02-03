@@ -14,7 +14,7 @@ load_dotenv()
 GOOGLE_CLOUD_VISION_API_KEY = os.getenv("API_KEY")
 
 def google_ocr(image_bytes):
-    """Send image to Google Cloud Vision OCR API and extract text"""
+    """Send image to Google Cloud Vision OCR API and extract text."""
     try:
         base64_image = base64.b64encode(image_bytes).decode()
 
@@ -24,7 +24,7 @@ def google_ocr(image_bytes):
         payload = {
             "requests": [{
                 "image": {"content": base64_image},
-                "features": [{"type": "DOCUMENT_TEXT_DETECTION"}]  # 👈 Use DOCUMENT_TEXT_DETECTION
+                "features": [{"type": "DOCUMENT_TEXT_DETECTION"}]
             }]
         }
 
@@ -33,7 +33,7 @@ def google_ocr(image_bytes):
 
         result = response.json()
 
-        print("Full API Response:", result)  # 👈 Debugging log
+        print("Full API Response:", result)  # Debugging log
 
         if "responses" in result and result["responses"][0].get("fullTextAnnotation"):
             extracted_text = result["responses"][0]["fullTextAnnotation"]["text"]
@@ -44,13 +44,19 @@ def google_ocr(image_bytes):
         return f"Error during OCR: {str(e)}"
 
 def extract_expiry_date(text):
-    """Extract expiry date from text, prioritizing 'USE BY' or 'EXP' over 'PKD'."""
-    # Look for 'Use By', 'EXP', or 'Expires' followed by a date
+    """
+    Extract expiry date from text, avoiding 'PKD' and prioritizing specific expiry indicators.
+    """
+    # Improved regex patterns to prioritize expiry-related keywords and avoid 'PKD'
     date_patterns = [
-        r"(?i)(?:USE BY|EXP|Expires|Best Before)[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
-        r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{4})\b",
-        r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2})\b",
-        r"\b(\d{4}-\d{2}-\d{2})\b"
+        # Prioritize explicit expiry keywords with strong context
+        r"(?i)(?:USE BY|EXP(?:IRES)?|BEST BEFORE|EXPIRES)[\s:]*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+        
+        # Avoid dates immediately following 'PKD' or within 'PKD' context using negative lookbehind/lookahead
+        r"(?<!PKD)(?<!\w)(\d{1,2}[/-]\d{1,2}[/-]\d{4})(?!\w)(?!.*PKD)",
+        
+        # ISO date format with additional context checks to avoid 'PKD'
+        r"(?<!PKD)(?<!\w)(\d{4}-\d{2}-\d{2})(?!\w)(?!.*PKD)"
     ]
 
     for pattern in date_patterns:
@@ -62,7 +68,7 @@ def extract_expiry_date(text):
 
 @router.post("/detect-expiry/")
 async def detect_expiry(file: UploadFile = File(...)):
-    """API Endpoint to detect expiry date from an image"""
+    """API Endpoint to detect expiry date from an image."""
     image_bytes = await file.read()
 
     # Convert image to grayscale & enhance contrast
@@ -78,8 +84,8 @@ async def detect_expiry(file: UploadFile = File(...)):
 
     extracted_text = google_ocr(processed_image_bytes)
 
-    print("Extracted Text from Image:", extracted_text)  # 👈 Debugging log
+    print("Extracted Text from Image:", extracted_text)  # Debugging log
 
     expiry_date = extract_expiry_date(extracted_text)
 
-    return {"expiry_date": expiry_date, "full_text": extracted_text}  # 👈 Return full text for debugging
+    return {"expiry_date": expiry_date, "full_text": extracted_text}  # Return full text for debugging

@@ -75,7 +75,7 @@ class _HomepageState extends State<Homepage> {
       // Create a multipart request
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://127.0.0.1:8000/detect-expiry/'), // Replace with your backend URL
+        Uri.parse('https://5853-2402-8100-29d3-5475-1549-62a3-77a9-7af4.ngrok-free.app/detect-expiry/'), // Replace with your backend URL
       );
 
       // Attach the image file to the request
