@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "sharewell_app",
+            "request": "launch",
+            "type": "dart",
+            "program": "frontend/lib/main.dart"
+        },
+        {
+            "name": "sharewell_app (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "frontend/lib/main.dart"
+        },
+        {
+            "name": "sharewell_app (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "frontend/lib/main.dart"
+        }
+    ]
+}

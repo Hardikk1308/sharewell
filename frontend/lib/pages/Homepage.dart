@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../auth/login.dart';
 import '../constant/App_Colour.dart';
+import '../constant/SideNavgationbar.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -11,34 +12,51 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    user = _auth.currentUser;
+  }
+
+  void _logout() async {
+    await _auth.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Loginpage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                User? user = FirebaseAuth.instance.currentUser;
-                if (user != null) {
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const Loginpage()));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No user is currently logged in.'),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Logout'),
-            )
-          ],
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: MyDrawer(logoutCallback: _logout), // Side Navigation Drawer
+        body: Builder(
+          builder: (context) => Column(
+            children: [
+              SizedBox(height: 50), // Space for status bar
+              Padding(
+                padding: const EdgeInsets.only(),
+                child: IconButton(
+                  icon: Icon(Icons.menu,
+                      color: Colors.black, size: 30), // Custom Drawer Icon
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer(); // Open drawer manually
+                  },
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
