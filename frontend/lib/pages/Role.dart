@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../common/basic_app_buttons.dart';
-import 'Signupdetails/Donarspage.dart';
-import 'Signupdetails/Recevierspage.dart';
+import 'Signupdetails/ReceviersPage.dart';
+import 'Signupdetails/DonarsPage.dart';
 import 'Signupdetails/Volunteerspage.dart';
-
 
 class Role extends StatefulWidget {
   const Role({super.key});
@@ -101,10 +100,8 @@ class _RoleState extends State<Role> {
                     "I have something to donate to the needy", "Donor"),
                 buildSelectableContainer(
                     "Receiver", "I am a charitable organization", "Receiver"),
-                buildSelectableContainer(
-                    "Volunteer",
-                    "Wanted to help the needy by volunteering",
-                    "Volunteer"),
+                buildSelectableContainer("Volunteer",
+                    "Wanted to help the needy by volunteering", "Volunteer"),
               ],
             ),
           ),
@@ -113,10 +110,10 @@ class _RoleState extends State<Role> {
             text: 'Continue',
             onPressed: () {
               Widget nextPage;
-              if (selectedOption == "Donor") {
-                nextPage = DonorPage();
-              } else if (selectedOption == "Receiver") {
+              if (selectedOption == "Receiver") {
                 nextPage = ReceiversPage();
+              } else if (selectedOption == "Donor") {
+                nextPage = Donarspage();
               } else {
                 nextPage = Volunteers();
               }
