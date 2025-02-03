@@ -40,13 +40,21 @@ class _HomepageState extends State<Homepage> {
             children: [
               SizedBox(height: 50), // Space for status bar
               Padding(
-                padding: const EdgeInsets.only(),
-                child: IconButton(
-                  icon: Icon(Icons.menu,
-                      color: Colors.black, size: 30), // Custom Drawer Icon
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer(); // Open drawer manually
-                  },
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.menu, color: Colors.black, size: 30), // Custom Drawer Icon
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer(); // Open drawer manually
+                      },
+                    ),
+                    Text(
+                      'Hi ${user?.displayName ?? "User"}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
               Center(
