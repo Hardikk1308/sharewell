@@ -36,27 +36,40 @@ class _HomepageState extends State<Homepage> {
         backgroundColor: AppColors.background,
         drawer: MyDrawer(logoutCallback: _logout), // Side Navigation Drawer
         body: Builder(
-          builder: (context) => Column(
-            children: [
-              SizedBox(height: 50), // Space for status bar
-              Padding(
-                padding: const EdgeInsets.only(),
-                child: IconButton(
-                  icon: Icon(Icons.menu,
-                      color: Colors.black, size: 30), // Custom Drawer Icon
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer(); // Open drawer manually
-                  },
-                ),
+          builder: (context) => Column(children: [
+            // SizedBox(height: 50), // Space for status bar
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.menu,
+                            color: Colors.black, size: 23), // Custom Drawer Icon
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer(); // Open drawer manually
+                        },
+                      ),
+                      Center(
+                        child: Text(
+                          "Donate For the cause ",
+                          style: TextStyle(
+                            fontSize: 23,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 70,),
+                     Icon(Icons.notifications_active_outlined)
+                    ],
+                  ),
+                  Divider()
+                
+                ],
               ),
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ]),
         ),
       ),
     );
