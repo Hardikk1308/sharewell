@@ -1,59 +1,73 @@
-import torch
 import io
 import re
 import requests
 import base64
 import os
-import torch.nn as nn
+import torch
 from PIL import Image, ImageEnhance
-from fastapi import FastAPI, File, UploadFile
+from fastapi import APIRouter, File, UploadFile, HTTPException
 from torchvision import transforms
 from dotenv import load_dotenv
+from model_architecture import Model  # Import the Model class
 
-load_dotenv()
+router = APIRouter()
 
 # Load environment variables
-GOOGLE_CLOUD_VISION_API_KEY = os.getenv("API_KEY")
+load_dotenv()
 
-app = FastAPI()
+GOOGLE_CLOUD_VISION_API_KEY = "AIzaSyAlilJKsjPq1Ge8SECX9aF0GIvabosLvv4"
+if not GOOGLE_CLOUD_VISION_API_KEY:
+    raise ValueError("Missing Google Cloud Vision API Key in environment variables.")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
-MODEL_DIR = os.path.join(BASE_DIR, "models") 
-MODEL_PATH = os.path.join(MODEL_DIR, "fresh_stale_model.pth") 
+# Paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "models")
+MODEL_PATH = os.path.join(MODEL_DIR, "fresh_stale_model.pth")
+
+# Ensure model directory exists
+if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR)
+
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
 
 # ================== MODEL: Fresh vs Rotten Classifier ==================
-class FreshRottenClassifier(nn.Module):
-    def __init__(self):
-        super(FreshRottenClassifier, self).__init__()
-        self.model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=False)
-        self.model.fc = nn.Linear(self.model.fc.in_features, 2)  # 2 classes: Fresh, Rotten
-
-    def forward(self, x):
-        return self.model(x)
-
 # Load trained model
-model = FreshRottenClassifier()
-model.load_state_dict(torch.load("fresh_stale_model.pth", map_location=torch.device('cpu')))
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = Model()
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+model.to(device)
 model.eval()
 
-# Image preprocessing
-transform = transforms.Compose([
+# Image preprocessing for classification
+classification_transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-labels = ["Fresh", "Rotten"]
+labels_freshness = ["Fresh", "Rotten"]
 
-# ================== FUNCTION: Classify Fresh vs Rotten ==================
+# ================== FUNCTION: Classify Freshness ==================
 def classify_freshness(image_bytes):
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    image = transform(image).unsqueeze(0)
+    try:
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image = classification_transform(image).unsqueeze(0).to(device)
 
-    with torch.no_grad():
-        outputs = model(image)
-        _, predicted = torch.max(outputs, 1)
-        return labels[predicted.item()]
+        with torch.no_grad():
+            output = model(image)
+
+            # If output is a tuple, extract the first element (logits)
+            if isinstance(output, tuple):
+                output = output[0]
+
+            probabilities = torch.nn.functional.softmax(output, dim=1)
+            confidence, predicted = torch.max(probabilities, 1)
+
+            return labels_freshness[predicted.item()], confidence.item()
+    except Exception as e:
+        return f"Error in classification: {str(e)}", 0.0
+
 
 # ================== FUNCTION: Google OCR for Expiry Detection ==================
 def google_ocr(image_bytes):
@@ -77,18 +91,20 @@ def google_ocr(image_bytes):
         result = response.json()
 
         if "responses" in result and result["responses"][0].get("fullTextAnnotation"):
-            extracted_text = result["responses"][0]["fullTextAnnotation"]["text"]
-            return extracted_text
+            return result["responses"][0]["fullTextAnnotation"]["text"]
 
-        return "No text detected"
+        return None  # Return None if no text is detected
+    except requests.RequestException as e:
+        return f"Error in Google OCR API: {str(e)}"
     except Exception as e:
-        return f"Error during OCR: {str(e)}"
+        return f"Unexpected error during OCR: {str(e)}"
 
 # ================== FUNCTION: Extract Expiry Date ==================
 def extract_expiry_date(text):
-    """
-    Extract expiry date from text, avoiding 'PKD' and prioritizing expiry indicators.
-    """
+    """Extract expiry date while avoiding 'PKD' (Packaged Date) entries."""
+    if not text or not isinstance(text, str):
+        return None  # Return None if input is invalid
+
     date_patterns = [
         r"(?i)(?:USE BY|EXP(?:IRES)?|BEST BEFORE|EXPIRES)[\s:]*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
         r"(?<!PKD)(?<!\w)(\d{1,2}[/-]\d{1,2}[/-]\d{4})(?!\w)(?!.*PKD)",
@@ -100,51 +116,46 @@ def extract_expiry_date(text):
         if match:
             return match.group(1)
 
-    return "No expiry date found"
-
-# ================== FUNCTION: Estimate Fresh Produce Expiry ==================
-def estimate_expiry(freshness):
-    """Estimate expiry time for fresh produce."""
-    if freshness == "Fresh":
-        return "Estimated 5-7 days until expiry"
-    elif freshness == "Rotten":
-        return "Already expired"
-    return "Unknown"
+    return None
 
 # ================== API Endpoint: Detect Freshness & Expiry ==================
-@app.post("/analyze-food/")
+@router.post("/analyze-food/")
 async def analyze_food(file: UploadFile = File(...)):
     """API Endpoint to detect expiry date and classify fresh vs rotten"""
-    image_bytes = await file.read()
+    try:
+        image_bytes = await file.read()
 
-    # ===== 1. Detect Expiry Date using Google OCR =====
-    image = Image.open(io.BytesIO(image_bytes))
-    image = image.convert("L")  # Convert to grayscale
-    enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(2)  # Increase contrast
+        # ===== Step 1: Detect Expiry Date using Google OCR =====
+        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("L")  # Grayscale for OCR
+        enhancer = ImageEnhance.Contrast(image_for_ocr)
+        image_for_ocr = enhancer.enhance(2)  # Increase contrast
 
-    # Convert image to bytes
-    image_io = io.BytesIO()
-    image.save(image_io, format="PNG")
-    processed_image_bytes = image_io.getvalue()
+        # Convert enhanced image to bytes for OCR
+        image_io = io.BytesIO()
+        image_for_ocr.save(image_io, format="PNG")
+        processed_image_bytes = image_io.getvalue()
 
-    extracted_text = google_ocr(processed_image_bytes)
-    expiry_date = extract_expiry_date(extracted_text)
+        extracted_text = google_ocr(processed_image_bytes)
 
-    # If expiry date is found, assume it's a packaged product
-    if expiry_date != "No expiry date found":
+        expiry_date = extract_expiry_date(extracted_text) if extracted_text and not extracted_text.startswith("Error") else None
+
+        # If expiry date is found, assume it's a packaged product
+        if expiry_date:
+            return {
+                "type": "Packaged Product",
+                "expiry_date": expiry_date,
+                "full_text": extracted_text or ""
+            }
+
+        # ===== Step 2: Detect Fresh vs Rotten for fresh produce =====
+        freshness_result, confidence_score = classify_freshness(image_bytes)
+
         return {
-            "type": "Packaged Product",
-            "expiry_date": expiry_date,
-            "full_text": extracted_text
+            "type": "Fresh Produce",
+            "freshness": freshness_result,
+            "confidence_score": confidence_score,
+            "message": f"The product appears to be {freshness_result}."
         }
-
-    # ===== 2. Detect Fresh vs Rotten for fresh produce =====
-    freshness_result = classify_freshness(image_bytes)
-    estimated_expiry = estimate_expiry(freshness_result)
-
-    return {
-        "type": "Fresh Produce",
-        "freshness": freshness_result,
-        "estimated_expiry": estimated_expiry
-    }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
