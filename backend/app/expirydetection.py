@@ -15,7 +15,7 @@ router = APIRouter()
 # Load environment variables
 load_dotenv()
 
-GOOGLE_CLOUD_VISION_API_KEY = "AIzaSyAlilJKsjPq1Ge8SECX9aF0GIvabosLvv4"
+GOOGLE_CLOUD_VISION_API_KEY = "AIzaSyA54kELek3k5YRbmU5THEC32UyQWlnnELY4"
 if not GOOGLE_CLOUD_VISION_API_KEY:
     raise ValueError("Missing Google Cloud Vision API Key in environment variables.")
 
@@ -139,7 +139,6 @@ async def analyze_food(file: UploadFile = File(...)):
 
         expiry_date = extract_expiry_date(extracted_text) if extracted_text and not extracted_text.startswith("Error") else None
 
-        # If expiry date is found, assume it's a packaged product
         if expiry_date:
             return {
                 "type": "Packaged Product",
@@ -147,7 +146,6 @@ async def analyze_food(file: UploadFile = File(...)):
                 "full_text": extracted_text or ""
             }
 
-        # ===== Step 2: Detect Fresh vs Rotten for fresh produce =====
         freshness_result, confidence_score = classify_freshness(image_bytes)
 
         return {
