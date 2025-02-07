@@ -19,6 +19,8 @@ class _RestaurantFormState extends State<RestaurantForm> {
   final TextEditingController NumberController = TextEditingController();
   final TextEditingController AddressController = TextEditingController();
   final TextEditingController PincodeController = TextEditingController();
+  final TextEditingController CityController = TextEditingController();
+  final TextEditingController GSTINController = TextEditingController();
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -208,8 +210,28 @@ class _RestaurantFormState extends State<RestaurantForm> {
               Keyboard: TextInputType.text,
               labelText: 'City',
               hintText: 'Enter City ',
-              controller: PincodeController,
+              controller:CityController,
               icon: Icons.location_city,
+            ),
+             SizedBox(
+              height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: const Text(
+                "GSTIN Number",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            CustomFormField(
+              Keyboard: TextInputType.number,
+              labelText: 'GSTIN Number',
+              hintText: 'GSTIN Number',
+              controller: GSTINController,
+              icon: Icons.numbers,
             ),
             SizedBox(
               height: 40,
