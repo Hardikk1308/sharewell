@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../Forms/Resturants.dart';
-import '../../Forms/individual.dart';
+import '../../Donarsform/Resturants.dart';
+import '../../Donarsform/individual.dart';
 import '../../common/Cards/Card 1.dart';
 import '../../constant/App_Colour.dart';
 
@@ -19,7 +19,7 @@ class _DonarspageState extends State<Donarspage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Donor Type"),
+          title: Center(child: const Text("Donor Type")),
           titleTextStyle: TextStyle(
             // color: AppColors.primary,
             color: Colors.black,

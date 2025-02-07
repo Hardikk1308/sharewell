@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Side Navigation Drawer
 class MyDrawer extends StatelessWidget {
   final VoidCallback logoutCallback;
 
@@ -9,36 +8,16 @@ class MyDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      
       child: ListView(
         padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text("User Name"),
-            accountEmail: Text("user@example.com"),
-            currentAccountPicture: CircleAvatar(
-              // backgroundImage: AssetImage("assets/profile.jpg"),
-            ),
-            decoration: BoxDecoration(
-              color: Colors.deepPurple,
-            ),
+        children: <Widget>[
+          const DrawerHeader(
+            decoration: BoxDecoration(color: Colors.blue),
+            child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 24)),
           ),
           ListTile(
-            leading: Icon(Icons.home),
-            title: Text("Home"),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text("Settings"),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: Icon(Icons.exit_to_app, color: Colors.red),
-            title: Text("Logout", style: TextStyle(color: Colors.red)),
-            onTap: logoutCallback,
+            title: const Text("Logout"),
+            onTap: logoutCallback, // Call logout function
           ),
         ],
       ),
