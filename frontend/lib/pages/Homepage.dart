@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert'; // For decoding JSON responses
 import '../auth/login.dart';
 import '../constant/App_Colour.dart';
 import '../constant/SideNavgationbar.dart';
@@ -19,6 +20,8 @@ class _HomepageState extends State<Homepage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? user;
   File? _image;
+  String? _expiryDate; // To store the expiry date fetched from the backend
+  bool _isLoading = false; // To show a loading indicator during API call
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -36,37 +39,78 @@ class _HomepageState extends State<Homepage> {
   }
 
   Future<void> _captureImage() async {
+    // Request camera permission
     var status = await Permission.camera.request();
+
     if (status.isGranted) {
+      // Capture image using camera
       final pickedFile = await _picker.pickImage(source: ImageSource.camera);
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
+          _expiryDate = null; // Reset expiry date when a new image is captured
         });
-        _sendImageToFastAPI(_image!);
+        // Send image to backend for processing
+        await _sendImageToFastAPI(_image!);
       }
+    } else if (status.isPermanentlyDenied) {
+      // Show a dialog to guide the user to app settings
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Camera permission permanently denied. Please enable it in settings.")),
+      );
+      openAppSettings();
     } else {
-      print("Camera permission denied");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Camera permission denied")),
+      );
     }
   }
 
   Future<void> _sendImageToFastAPI(File image) async {
-  var request = http.MultipartRequest(
-    'POST',
-    Uri.parse('http://127.0.0.1:8000/detect-expiry/'),
-  );
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
 
-  request.files.add(await http.MultipartFile.fromPath('file', image.path));
+    try {
+      // Create a multipart request
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://5853-2402-8100-29d3-5475-1549-62a3-77a9-7af4.ngrok-free.app/detect-expiry/'), // Replace with your backend URL
+      );
 
-  var response = await request.send();
-  if (response.statusCode == 200) {
-    var responseData = await response.stream.bytesToString();
-    print("Server Response: $responseData");
-  } else {
-    print("Image upload failed with status code: ${response.statusCode}");
+      // Attach the image file to the request
+      request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+      // Send the request to the backend
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        // Parse the response from the backend
+        var responseData = await response.stream.bytesToString();
+        var jsonResponse = json.decode(responseData);
+
+        setState(() {
+          _expiryDate = jsonResponse['expiry_date']; // Extract expiry date from response
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Expiry date detected successfully!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to detect expiry date. Status code: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error occurred while sending image: $e")),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,21 +123,50 @@ class _HomepageState extends State<Homepage> {
             children: [
               SizedBox(height: 50), // Space for status bar
               Padding(
-                padding: const EdgeInsets.only(),
-                child: IconButton(
-                  icon: Icon(Icons.menu,
-                      color: Colors.black, size: 30), // Custom Drawer Icon
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer(); // Open drawer manually
-                  },
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.menu, color: Colors.black, size: 30), // Custom Drawer Icon
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer(); // Open drawer manually
+                      },
+                    ),
+                    Text(
+                      'Hi ${user?.displayName ?? "User"}',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [],
-                ),
+              SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: _captureImage,
+                icon: Icon(Icons.camera_alt),
+                label: Text("Scan Expiry Date"),
               ),
+              if (_isLoading)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: CircularProgressIndicator(), // Show loading indicator during API call
+                ),
+              if (_image != null)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Image.file(_image!),
+                ),
+              if (_expiryDate != null)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    "Detected Expiry Date:\n$_expiryDate",
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                  ),
+                ),
             ],
           ),
         ),
