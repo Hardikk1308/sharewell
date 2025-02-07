@@ -19,6 +19,7 @@ class _NGOSState extends State<NGOS> {
   final TextEditingController AddressController = TextEditingController();
   final TextEditingController PincodeController = TextEditingController();
   final TextEditingController CityController = TextEditingController();
+  final TextEditingController GovernmentidController = TextEditingController();
 
   String? selectedGovID;
   List<String> govIDOptions = [
@@ -131,6 +132,10 @@ class _NGOSState extends State<NGOS> {
                 },
               ),
             ),
+            SizedBox(height: 10),
+            _buildLabel('Government ID number'),
+            _buildTextField(GovernmentidController, 'Government ID number',
+                'Enter Number', Icons.numbers),
             SizedBox(height: 40),
             Center(
               child: BasicAppButton(
