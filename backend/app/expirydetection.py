@@ -127,31 +127,51 @@ def format_expiry_date(date_str):
 # ================== API Endpoint: Detect Freshness & Expiry ==================
 @router.post("/analyze-food/")
 async def analyze_food(file: UploadFile = File(...)):
+
     if not file.content_type.startswith("image/"):
+
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
 
+
     try:
+
         image_bytes = await file.read()
 
+
         # Step 1: Detect Expiry Date using Google OCR
+
         image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+
         enhancer = ImageEnhance.Contrast(image_for_ocr)
+
         image_for_ocr = enhancer.enhance(2)
 
+
         image_io = io.BytesIO()
+
         image_for_ocr.save(image_io, format="PNG")
+
         processed_image_bytes = image_io.getvalue()
 
+
         extracted_text = google_ocr(processed_image_bytes)
+
         expiry_date = extract_expiry_date(extracted_text)
 
+
         # Step 2: Classify Freshness
+
         freshness_result = classify_freshness(image_bytes)
 
+
         response_data = {
+
             "type": "Fresh Produce" if not expiry_date else "Packaged Product",
+
             "freshness": freshness_result["label"],
+
             "confidence_score": freshness_result["confidence"],
+
             "message": f"The product appears to be {freshness_result['label']}."
         }
 
@@ -160,10 +180,13 @@ async def analyze_food(file: UploadFile = File(...)):
                 "expiry_date": expiry_date,
                 "full_text": extracted_text or "",
                 "message": "Expiry date detected, classified as a packaged product."
+
             })
+
 
         return response_data
 
+
     except Exception as e:
+
         raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
-    

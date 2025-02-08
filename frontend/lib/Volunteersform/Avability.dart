@@ -17,7 +17,7 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
     "Afternoon 1 to 3",
     "Afternoon 1 to 3"
   ];
-  List<bool> _selectedDays = List.filled(7, false);
+  final final List<bool> _selectedDays = List.filled(7, false);
   bool _allWeekdays = false;
   bool _allWeekend = false;
   bool _anyDay = false;
