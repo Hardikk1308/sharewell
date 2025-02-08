@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import '../common/basic_app_buttons.dart';
 import '../constant/App_Colour.dart';
 import '../constant/customtextfield.dart';
@@ -14,25 +16,82 @@ class IndividualForm extends StatefulWidget {
 }
 
 class _IndividualFormState extends State<IndividualForm> {
-  final TextEditingController individualNameController =
-      TextEditingController();
+  final TextEditingController individualNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController pincodeController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController aadharcardController = TextEditingController();
-
   final List<File> _images = [];
 
-  void _showSuccessDialog(BuildContext context) {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _images.add(File(pickedFile.path));
+      });
+    }
+  }
+
+  Future<String?> _uploadImage(File imageFile) async {
+    try {
+      String fileName = 'aadhar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference ref = _storage.ref().child('aadhar_images/$fileName');
+      UploadTask uploadTask = ref.putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      print("Error uploading image: $e");
+      return null;
+    }
+  }
+
+  Future<void> _saveData() async {
+    if (individualNameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        numberController.text.isEmpty ||
+        addressController.text.isEmpty ||
+        pincodeController.text.isEmpty ||
+        cityController.text.isEmpty ||
+        aadharcardController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    List<String> imageUrls = [];
+    for (File image in _images) {
+      String? imageUrl = await _uploadImage(image);
+      if (imageUrl != null) imageUrls.add(imageUrl);
+    }
+
+    await _firestore.collection('donors').add({
+      'name': individualNameController.text,
+      'email': emailController.text,
+      'phone': numberController.text,
+      'address': addressController.text,
+      'pincode': pincodeController.text,
+      'city': cityController.text,
+      'aadhar_number': aadharcardController.text,
+      'aadhar_images': imageUrls,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    _showSuccessDialog();
+  }
+
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.background,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           contentPadding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -47,23 +106,16 @@ class _IndividualFormState extends State<IndividualForm> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DonorDashboard()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => DonorDashboard()));
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 6,
                   backgroundColor: AppColors.background,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text(
                   "OK",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500),
+                  style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -73,16 +125,6 @@ class _IndividualFormState extends State<IndividualForm> {
     );
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _images.add(File(pickedFile.path));
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -90,25 +132,19 @@ class _IndividualFormState extends State<IndividualForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildLabel("Individual Name"),
-          _buildTextField(individualNameController, 'Name', 'Enter Your Name',
-              Icons.person),
+          _buildTextField(individualNameController, 'Name', 'Enter Your Name', Icons.person),
           _buildLabel("Email"),
           _buildTextField(emailController, 'Email', 'Enter Email', Icons.email),
           _buildLabel("Aadhar Card Number"),
-          _buildTextField(aadharcardController, 'Aadhar Card Number',
-              'Enter Aadhar Number', Icons.credit_card),
+          _buildTextField(aadharcardController, 'Aadhar Card Number', 'Enter Aadhar Number', Icons.credit_card),
           _buildLabel("Phone Number"),
-          _buildTextField(numberController, 'Phone Number',
-              'Enter Phone Number', Icons.phone),
+          _buildTextField(numberController, 'Phone Number', 'Enter Phone Number', Icons.phone),
           _buildLabel("Address"),
-          _buildTextField(
-              addressController, 'Address', 'Enter Address', Icons.location_on),
+          _buildTextField(addressController, 'Address', 'Enter Address', Icons.location_on),
           _buildLabel("Pincode"),
-          _buildTextField(
-              pincodeController, 'Pincode', 'Enter Pincode', Icons.pin),
+          _buildTextField(pincodeController, 'Pincode', 'Enter Pincode', Icons.pin),
           _buildLabel("City"),
-          _buildTextField(
-              cityController, 'City', 'Enter your city', Icons.location_city),
+          _buildTextField(cityController, 'City', 'Enter your city', Icons.location_city),
           SizedBox(height: 20),
           _buildLabel("Upload Aadhar Card Image"),
           _buildImageUploader(),
@@ -116,9 +152,7 @@ class _IndividualFormState extends State<IndividualForm> {
           Center(
             child: BasicAppButton(
               text: 'Submit',
-              onPressed: () {
-                _showSuccessDialog(context);
-              },
+              onPressed: _saveData,
             ),
           ),
           SizedBox(height: 50),
@@ -137,8 +171,7 @@ class _IndividualFormState extends State<IndividualForm> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String labelText,
-      String hintText, IconData icon) {
+  Widget _buildTextField(TextEditingController controller, String labelText, String hintText, IconData icon) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 5),
       child: CustomFormField(
@@ -198,8 +231,7 @@ class _IndividualFormState extends State<IndividualForm> {
                     );
                   }).toList(),
                 )
-              : Text("No images selected",
-                  style: TextStyle(color: Colors.grey)),
+              : Text("No images selected", style: TextStyle(color: Colors.grey)),
         ],
       ),
     );
