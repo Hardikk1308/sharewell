@@ -1,97 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
-import 'package:google_maps_webservice/directions.dart' as gmaps;
-import 'dart:async';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
-
   @override
-  State<MapPage> createState() => _MapPageState();
+  _MapPageState createState() => _MapPageState();
 }
 
 class _MapPageState extends State<MapPage> {
-  late GoogleMapController _controller;
-  Location _location = Location();
-  LatLng _initialPosition = const LatLng(37.4223, -122.0848);
+  GoogleMapController? _controller;
+  Location _locationController = Location();
+  LatLng? _currentPosition;
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
-  final Completer<GoogleMapController> _controllerCompleter = Completer();
 
   @override
   void initState() {
     super.initState();
-    _getUserLocation();
+    getLocationUpdates();
   }
 
-  Future<void> _getUserLocation() async {
-    bool serviceEnabled;
-    PermissionStatus permissionGranted;
+  Future<void> getLocationUpdates() async {
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
 
-    serviceEnabled = await _location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) {
+    _serviceEnabled = await _locationController.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await _locationController.requestService();
+      if (!_serviceEnabled) {
         return;
       }
     }
 
-    permissionGranted = await _location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await _location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
+    _permissionGranted = await _locationController.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await _locationController.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
         return;
       }
     }
 
-    final locationData = await _location.getLocation();
-    setState(() {
-      _initialPosition = LatLng(locationData.latitude!, locationData.longitude!);
-      _markers.add(
-        Marker(
-          markerId: const MarkerId("userLocation"),
-          position: _initialPosition,
-          infoWindow: const InfoWindow(title: "Your Location"),
-        ),
-      );
-    });
-
-    _location.onLocationChanged.listen((newLoc) {
-      setState(() {
-        _initialPosition = LatLng(newLoc.latitude!, newLoc.longitude!);
-        _markers.add(
-          Marker(
-            markerId: const MarkerId("updatedLocation"),
-            position: _initialPosition,
-          ),
-        );
-      });
-      _controller.animateCamera(
-        CameraUpdate.newLatLng(_initialPosition),
-      );
+    _locationController.onLocationChanged.listen((LocationData currentLocation) {
+      if (currentLocation.latitude != null && currentLocation.longitude != null) {
+        setState(() {
+          _currentPosition = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+          _markers.clear();
+          _markers.add(
+            Marker(
+              markerId: MarkerId("currentLocation"),
+              position: _currentPosition!,
+              infoWindow: InfoWindow(title: "You are here"),
+            ),
+          );
+          _controller?.animateCamera(
+            CameraUpdate.newLatLng(_currentPosition!),
+          );
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Google Maps with Flutter")),
+      appBar: AppBar(title: Text("Google Maps Integration")),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: _initialPosition,
-          zoom: 13,
+          target: LatLng(37.7749, -122.4194),
+          zoom: 14,
         ),
-        markers: _markers,
-        polylines: _polylines,
         onMapCreated: (GoogleMapController controller) {
-          _controllerCompleter.complete(controller);
           _controller = controller;
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _getUserLocation,
-        child: const Icon(Icons.my_location),
+        markers: _markers,
+        polylines: _polylines,
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
       ),
     );
   }
