@@ -26,7 +26,7 @@ class _HomepageState extends State<Homepage> {
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
-  final String _apiUrl = " https://33dc-112-196-126-3.ngrok-free.app/analyze-food/"; // Change this to your FastAPI URL
+  final String _apiUrl = "https://33dc-112-196-126-3.ngrok-free.app/analyze-food/"; // Change this to your FastAPI URL
 
   @override
   void initState() {
