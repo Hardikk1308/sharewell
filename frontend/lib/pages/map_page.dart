@@ -15,13 +15,58 @@ class _MapPageState extends State<MapPage> {
   LatLng? _currentPosition;
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
+  String locationText = "Fetching location...";
 
   @override
   void initState() {
     super.initState();
     getLocationUpdates();
+    fetchLocation();
   }
 
+  /// Fetches user's current latitude and longitude
+  Future<Position?> getUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return null;
+    }
+
+    // Check and request location permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return null;
+    }
+
+    // Get current position
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  }
+
+  /// Fetches location and updates UI
+  void fetchLocation() async {
+    Position? position = await getUserLocation();
+    if (position != null) {
+      setState(() {
+        locationText = "Latitude: ${position.latitude}, Longitude: ${position.longitude}";
+      });
+    } else {
+      setState(() {
+        locationText = "Could not retrieve location.";
+      });
+    }
+  }
+
+  /// Listens for real-time location updates and updates map
   Future<void> getLocationUpdates() async {
     bool _serviceEnabled;
     PermissionStatus _permissionGranted;
@@ -66,20 +111,32 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Google Maps Integration")),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: LatLng(37.7749, -122.4194),
-          zoom: 14,
-        ),
-        onMapCreated: (GoogleMapController controller) {
-          _controller = controller;
-        },
-        markers: _markers,
-        polylines: _polylines,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: LatLng(37.7749, -122.4194), // Default location (San Francisco)
+              zoom: 14,
+            ),
+            onMapCreated: (GoogleMapController controller) {
+              _controller = controller;
+            },
+            markers: _markers,
+            polylines: _polylines,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+          ),
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: Container(
+              padding: EdgeInsets.all(10),
+              color: Colors.white,
+              child: Text(locationText, style: TextStyle(fontSize: 16)),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-
