@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // For decoding JSON responses
+import 'dart:convert'; 
 import '../auth/login.dart';
 import '../constant/App_Colour.dart';
 import '../constant/SideNavgationbar.dart';
@@ -20,9 +20,13 @@ class _HomepageState extends State<Homepage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? user;
   File? _image;
-  String? _expiryDate; // To store expiry date from backend
+  String? _expiryDate;
+  String? _freshnessLabel;
+  double? _confidenceScore;
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
+
+  final String _apiUrl = "https://your-backend-url.com/analyze-food/"; // Change this to your FastAPI URL
 
   @override
   void initState() {
@@ -46,7 +50,9 @@ class _HomepageState extends State<Homepage> {
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
-          _expiryDate = null; // Reset expiry date
+          _expiryDate = null;
+          _freshnessLabel = null;
+          _confidenceScore = null;
         });
         await _sendImageToFastAPI(_image!);
       }
@@ -68,11 +74,7 @@ class _HomepageState extends State<Homepage> {
     });
 
     try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://7486-117-203-246-41.ngrok-free.app/analyze-food/'),
-      );
-
+      var request = http.MultipartRequest('POST', Uri.parse(_apiUrl));
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
       var response = await request.send();
@@ -82,15 +84,17 @@ class _HomepageState extends State<Homepage> {
         var jsonResponse = json.decode(responseData);
 
         setState(() {
-          _expiryDate = jsonResponse['expiry_date']; // Extract expiry date
+          _expiryDate = jsonResponse['expiry_date'] ?? "No expiry date detected";
+          _freshnessLabel = jsonResponse['freshness'] ?? "Unknown";
+          _confidenceScore = jsonResponse['confidence_score'] ?? 0.0;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Expiry date detected successfully!")),
+          SnackBar(content: Text("Analysis completed successfully!")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to detect expiry date. Status: ${response.statusCode}")),
+          SnackBar(content: Text("Failed to analyze image. Status: ${response.statusCode}")),
         );
       }
     } catch (e) {
@@ -148,7 +152,7 @@ class _HomepageState extends State<Homepage> {
                   padding: const EdgeInsets.all(10.0),
                   child: Image.file(_image!),
                 ),
-              if (_expiryDate != null)
+              if (_expiryDate != null || _freshnessLabel != null)
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: AnimatedOpacity(
@@ -166,7 +170,7 @@ class _HomepageState extends State<Homepage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Detected Expiry Date",
+                              "Analysis Results",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -174,14 +178,43 @@ class _HomepageState extends State<Homepage> {
                               ),
                             ),
                             SizedBox(height: 5),
-                            Text(
-                              _expiryDate!,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
+                            if (_expiryDate != null)
+                              Column(
+                                children: [
+                                  Text(
+                                    "Expiry Date: $_expiryDate",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                ],
                               ),
-                            ),
+                            if (_freshnessLabel != null)
+                              Column(
+                                children: [
+                                  Text(
+                                    "Freshness: $_freshnessLabel",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: _freshnessLabel == "Fresh"
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Confidence: ${(_confidenceScore! * 100).toStringAsFixed(2)}%",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                       ),
