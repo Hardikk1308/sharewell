@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../common/basic_app_buttons.dart';
 import '../constant/App_Colour.dart';
 import '../constant/customtextfield.dart';
@@ -22,8 +23,51 @@ class _Individual_FormState extends State<Individual_Form> {
   final TextEditingController pincodeController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController aadharcardController = TextEditingController();
-
   final List<File> _images = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // final List<File> _images = [];
+
+
+  Future<String?> _uploadImage(File image) async {
+    // Implement your image upload logic here
+    // For example, you can use Firebase Storage to upload the image and get the URL
+    // Return the URL of the uploaded image
+    return null;
+  }
+
+  Future<void> _saveData1() async {
+    if (individualNameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        numberController.text.isEmpty ||
+        addressController.text.isEmpty ||
+        pincodeController.text.isEmpty ||
+        cityController.text.isEmpty ||
+        aadharcardController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    List<String> imageUrls = [];
+    for (File image in _images) {
+      String? imageUrl = await _uploadImage(image);
+      if (imageUrl != null) imageUrls.add(imageUrl);
+    }
+
+    await _firestore.collection('donors').add({
+      'name': individualNameController.text,
+      'email': emailController.text,
+      'phone': numberController.text,
+      'address': addressController.text,
+      'pincode': pincodeController.text,
+      'city': cityController.text,
+      'aadhar_number': aadharcardController.text,
+      'aadhar_images': imageUrls,
+    });
+
+    _showSuccessDialog(context);
+  }
 
   void _showSuccessDialog(BuildContext context) {
     showDialog(
@@ -40,7 +84,7 @@ class _Individual_FormState extends State<Individual_Form> {
               Icon(Icons.check_circle, color: Colors.green, size: 60),
               SizedBox(height: 20),
               Text(
-                "Donor successfully created!",
+                "Individual successfully created!",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
@@ -118,6 +162,7 @@ class _Individual_FormState extends State<Individual_Form> {
               text: 'Submit',
               onPressed: () {
                 _showSuccessDialog(context);
+                _saveData1();
               },
             ),
           ),

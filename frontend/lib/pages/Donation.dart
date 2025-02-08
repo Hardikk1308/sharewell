@@ -1,7 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' as intl;
-
 import '../constant/App_Colour.dart';
 import 'Homepage.dart';
 
@@ -21,6 +21,65 @@ class _DonationListingPageState extends State<DonationListingPage> {
       TextEditingController();
   final TextEditingController _expirationTimeController =
       TextEditingController();
+
+
+      void _submitForm() async {
+  if (_formKey.currentState!.validate() && isChecked) {
+    try {
+      // Reference Firestore instance
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      // Data to be stored in Firestore
+      Map<String, dynamic> donationData = {
+        "title": _titleController.text.trim(),
+        "description": _descriptionController.text.trim(),
+        "type": _typeController.text.trim(),
+        "vegQuantity": isVegSelected ? vegQuantity : 0,
+        "nonVegQuantity": isNonVegSelected ? nonVegQuantity : 0,
+        "expirationDate": _expirationDateController.text.trim(),
+        "expirationTime": _expirationTimeController.text.trim(),
+        "timestamp": FieldValue.serverTimestamp(),
+      };
+
+      // Store data in Firestore
+      await firestore.collection("donations").add(donationData);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Donation Listed Successfully!")),
+      );
+
+      // Clear fields after submission
+      _titleController.clear();
+      _descriptionController.clear();
+      _typeController.clear();
+      _expirationDateController.clear();
+      _expirationTimeController.clear();
+      setState(() {
+        isVegSelected = false;
+        isNonVegSelected = false;
+        isChecked = false;
+        vegQuantity = 5;
+        nonVegQuantity = 5;
+      });
+
+      // Navigate to Homepage after successful submission
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Homepage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Please fill all details and confirm hygiene.")),
+    );
+  }
+}
+
 
   int vegQuantity = 5;
   int nonVegQuantity = 5;
@@ -174,15 +233,9 @@ class _DonationListingPageState extends State<DonationListingPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Donation Listed Successfully!")),
-                    );
-                  }
-                },
+                onPressed: _submitForm,
                 child: Text("Submit",
-                    style: TextStyle(color: Colors.white, fontSize: 18)),
+                style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
             ],
           ),

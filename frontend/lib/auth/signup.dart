@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../common/basic_app_buttons.dart';
 import '../constant/App_Colour.dart';
 import '../constant/customtextfield.dart';
-import '../pages/Homepage.dart';
 import '../pages/Role.dart';
 import 'login.dart';
 
@@ -45,24 +45,29 @@ class _SignupState extends State<Signup> {
   }
 
   // Signup with email and password
-  Future<void> _signup() async {
-    if (!_formKey.currentState!.validate()) return;
-    try {
-      final userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-      print(userCredential);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Homepage()),
-      );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message ?? 'Signup failed')));
-    }
+ Future<void> signUpUser(String email, String password, String name, String role) async {
+  try {
+    UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Get the user's UID
+    String uid = userCredential.user!.uid;
+
+    // Store user details in Firestore
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'name': name,
+      'email': email,
+      'role': role, // Assign role here (e.g., "admin", "donor", "receiver")
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    print("User Registered and Role Assigned!");
+  } catch (e) {
+    print("Error: $e");
   }
+}
 
   @override
   void dispose() {
@@ -148,7 +153,16 @@ class _SignupState extends State<Signup> {
                 const SizedBox(height: 25),
                 BasicAppButton(
                   text: 'Signup',
-                  onPressed: _signup,
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      signUpUser(
+                        emailController.text,
+                        passwordController.text,
+                        'User Name', // Replace with actual user name
+                        'User Role'  // Replace with actual user role
+                      );
+                    }
+                  },
                 ),
                 SizedBox(height: 20),
                 GestureDetector(

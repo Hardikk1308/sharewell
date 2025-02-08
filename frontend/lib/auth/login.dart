@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../common/basic_app_buttons.dart';
@@ -36,6 +37,14 @@ class _LoginpageState extends State<Loginpage> {
       }
     }
   }
+  Future<String?> getUserRole(String uid) async {
+  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+  if (userDoc.exists) {
+    return userDoc['role']; // Returns "admin", "donor", or "receiver"
+  }
+  return null;
+}
+
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../common/basic_app_buttons.dart';
 import '../constant/App_Colour.dart';
@@ -21,6 +23,56 @@ class _NGOSState extends State<NGOS> {
   final TextEditingController CityController = TextEditingController();
   final TextEditingController GovernmentidController = TextEditingController();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _submitData() async {
+    try {
+      // Ensure user is logged in
+      User? user = _auth.currentUser;
+      if (user == null) {
+        throw Exception("User not logged in. Please sign in.");
+      }
+
+      // Collect form data
+      Map<String, dynamic> restaurantData = {
+        "restaurantName": EnterpriseController.text.trim(),
+        "ownerName": OwnersNameController.text.trim(),
+        "email": emailController.text.trim(),
+        "phoneNumber": NumberController.text.trim(),
+        "address": AddressController.text.trim(),
+        "pincode": PincodeController.text.trim(),
+        "city": CityController.text.trim(),
+        "govern": GovernmentidController.text.trim(),
+        "userId": user.uid, // Store user ID for security
+      };
+
+      // Store data in Firestore
+      await _firestore.collection("restaurants").add(restaurantData);
+
+      // Show success dialog
+      _showSuccessDialog(context);
+    } catch (e) {
+      print("Error submitting data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error submitting data: $e")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    EnterpriseController.dispose();
+    OwnersNameController.dispose();
+    emailController.dispose();
+    NumberController.dispose();
+    AddressController.dispose();
+    PincodeController.dispose();
+    CityController.dispose();
+    GovernmentidController.dispose();
+    super.dispose();
+  }
+
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -43,6 +95,7 @@ class _NGOSState extends State<NGOS> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
+                  _submitData();
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => ReceiverHomePage()),
@@ -100,7 +153,6 @@ class _NGOSState extends State<NGOS> {
             _buildTextField(
                 CityController, 'City', 'Enter City', Icons.location_city),
             _buildLabel("License Number"),
-
             _buildTextField(GovernmentidController, 'License Number',
                 'License Number', Icons.badge),
             SizedBox(height: 40),
