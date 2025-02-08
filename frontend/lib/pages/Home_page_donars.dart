@@ -42,47 +42,54 @@ class _DonorDashboardState extends State<DonorDashboard>
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        key: _scaffoldKey,
-        drawer: MyDrawer(
-          logoutCallback: () {
-            _logout();
-          },
-        ),
-        backgroundColor: Colors.white,
-        bottomNavigationBar: BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.message), label: "Messages"),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-          ],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 20),
-              _buildStatsSection(),
-              const SizedBox(height: 20),
-              _buildTabBar(),
-              const SizedBox(height: 20),
-              _buildTabView(),
-              const SizedBox(height: 30),
-              _buildDonationHistory(),
-              const SizedBox(height: 20),
-              _buildCommunitySection(),
-              const SizedBox(height: 20),
-              _buildNearbyNGOs(),
-              const SizedBox(height: 20),
-              _buildFAQSection(),
-            ],
+      child: Stack(children: [
+        Scaffold(
+          key: _scaffoldKey,
+          drawer: MyDrawer(
+            logoutCallback: () {
+              _logout();
+            },
+          ),
+          backgroundColor: Colors.white,
+      
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 20),
+                _buildStatsSection(),
+                const SizedBox(height: 20),
+                _buildTabBar(),
+                const SizedBox(height: 20),
+                _buildTabView(),
+                const SizedBox(height: 30),
+                _buildDonationHistory(),
+                const SizedBox(height: 20),
+                _buildCommunitySection(),
+                const SizedBox(height: 20),
+                _buildNearbyNGOs(),
+                const SizedBox(height: 20),
+                _buildFAQSection(),
+              ],
+            ),
           ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.only(right: 20, bottom: 30),
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: FloatingActionButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              backgroundColor: Colors.deepPurple,
+              onPressed: () {}, child: Icon(Icons.chat,
+            color: Colors.white,)),
+          ),
+        ),
+      ]),
     );
   }
 

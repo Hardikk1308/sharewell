@@ -139,13 +139,22 @@ class _VolunteerDetailsPageState extends State<VolunteerDetailsPage> {
                 child: BasicAppButton(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AvailabilityPage()));
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) => AvailabilityPage(),
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
                   },
                   text: 'Continue',
                 ),
               ),
+              SizedBox(height: 30),
             ],
           ),
         ),

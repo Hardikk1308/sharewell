@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'auth/splashscreen 1.dart';
 import 'firebase_options.dart';
 import 'pages/Home_page_donars.dart';
-import 'pages/Homepage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
