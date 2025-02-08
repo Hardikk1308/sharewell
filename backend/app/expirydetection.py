@@ -127,66 +127,50 @@ def format_expiry_date(date_str):
 # ================== API Endpoint: Detect Freshness & Expiry ==================
 @router.post("/analyze-food/")
 async def analyze_food(file: UploadFile = File(...)):
-
     if not file.content_type.startswith("image/"):
-
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
-
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}. Please upload an image.")
 
     try:
-
         image_bytes = await file.read()
 
+        # Debugging: Check if image data is received
+        if not image_bytes or len(image_bytes) < 100:  # Small files could indicate an issue
+            raise HTTPException(status_code=400, detail="Uploaded image is empty or corrupted.")
 
-        # Step 1: Detect Expiry Date using Google OCR
-
-        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-
-        enhancer = ImageEnhance.Contrast(image_for_ocr)
-
-        image_for_ocr = enhancer.enhance(2)
-
-
-        image_io = io.BytesIO()
-
-        image_for_ocr.save(image_io, format="PNG")
-
-        processed_image_bytes = image_io.getvalue()
-
-
-        extracted_text = google_ocr(processed_image_bytes)
-
-        expiry_date = extract_expiry_date(extracted_text)
-
-
-        # Step 2: Classify Freshness
+        # Log metadata for debugging
+        print(f"Received image: {file.filename}, Size: {len(image_bytes)} bytes, Type: {file.content_type}")
 
         freshness_result = classify_freshness(image_bytes)
+        is_fresh_produce = freshness_result["label"] in ["Fresh", "Rotten"]
 
+        if is_fresh_produce:
+            return {
+                "type": "Fresh Produce",
+                "freshness": freshness_result["label"],
+                "confidence_score": freshness_result["confidence"],
+                "message": f"The product appears to be {freshness_result['label']}."
+            }
 
-        response_data = {
+        # Process for packaged product expiry detection
+        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        enhancer = ImageEnhance.Contrast(image_for_ocr)
+        image_for_ocr = enhancer.enhance(2)
 
-            "type": "Fresh Produce" if not expiry_date else "Packaged Product",
+        image_io = io.BytesIO()
+        image_for_ocr.save(image_io, format="PNG")
+        processed_image_bytes = image_io.getvalue()
 
-            "freshness": freshness_result["label"],
+        extracted_text = google_ocr(processed_image_bytes)
+        expiry_date = extract_expiry_date(extracted_text)
 
-            "confidence_score": freshness_result["confidence"],
-
-            "message": f"The product appears to be {freshness_result['label']}."
+        return {
+            "type": "Packaged Product",
+            "expiry_date": expiry_date if expiry_date else "Not detected",
+            "full_text": extracted_text or "No text found",
+            "message": "Expiry date detected and extracted." if expiry_date else "No expiry date found on the package."
         }
 
-        if expiry_date:
-            response_data.update({
-                "expiry_date": expiry_date,
-                "full_text": extracted_text or "",
-                "message": "Expiry date detected, classified as a packaged product."
-
-            })
-
-
-        return response_data
-
-
+    except HTTPException:
+        raise  # Re-raise known HTTP errors
     except Exception as e:
-
         raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
