@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:location/location.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_google_maps_webservices/geolocation.dart';
 
 class MapPage extends StatefulWidget {
   @override
@@ -11,111 +9,67 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   GoogleMapController? _controller;
-  Location _locationController = Location();
-  LatLng? _currentPosition;
+  LatLng _currentPosition = LatLng(28.6139, 77.2090); // Default: Delhi
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
   String locationText = "Fetching location...";
 
+  // Google Maps API Key Hardcoding this shit idc
+  final String _apiKey = "AIzaSyA54kELek3k5YRbmU5THEC32UyQWlnnELY";
+
   @override
   void initState() {
     super.initState();
-    getLocationUpdates();
     fetchLocation();
   }
 
-  /// Fetches user's current latitude and longitude
-  Future<Position?> getUserLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  /// Fetches user's current location using Google Maps Web Services
+  Future<void> fetchLocation() async {
+    final googleGeolocation = GoogleMapsGeolocation(apiKey: _apiKey);
 
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return null;
-    }
+    try {
+      final response = await googleGeolocation.getGeolocation();
+      if (response.isOkay) {
+        final lat = response.location.lat;
+        final lng = response.location.lng;
 
-    // Check and request location permissions
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return null;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return null;
-    }
-
-    // Get current position
-    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-  }
-
-  /// Fetches location and updates UI
-  void fetchLocation() async {
-    Position? position = await getUserLocation();
-    if (position != null) {
-      setState(() {
-        locationText = "Latitude: ${position.latitude}, Longitude: ${position.longitude}";
-      });
-    } else {
-      setState(() {
-        locationText = "Could not retrieve location.";
-      });
-    }
-  }
-
-  /// Listens for real-time location updates and updates map
-  Future<void> getLocationUpdates() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
-    }
-
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    _locationController.onLocationChanged.listen((LocationData currentLocation) {
-      if (currentLocation.latitude != null && currentLocation.longitude != null) {
         setState(() {
-          _currentPosition = LatLng(currentLocation.latitude!, currentLocation.longitude!);
-          _markers.clear();
+          _currentPosition = LatLng(lat, lng);
+          locationText = "Latitude: $lat, Longitude: $lng";
+
           _markers.add(
             Marker(
               markerId: MarkerId("currentLocation"),
-              position: _currentPosition!,
+              position: _currentPosition,
               infoWindow: InfoWindow(title: "You are here"),
             ),
           );
+
           _controller?.animateCamera(
-            CameraUpdate.newLatLng(_currentPosition!),
+            CameraUpdate.newLatLngZoom(_currentPosition, 14),
           );
         });
+      } else {
+        setState(() {
+          locationText = "Failed to fetch location: ${response.errorMessage}";
+        });
       }
-    });
+    } catch (e) {
+      setState(() {
+        locationText = "Error fetching location: $e";
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Google Maps Integration")),
+      appBar: AppBar(title: Text("Google Maps - Delhi Default")),
       body: Stack(
         children: [
           GoogleMap(
             initialCameraPosition: CameraPosition(
-              target: LatLng(37.7749, -122.4194), // Default location (San Francisco)
+              target: _currentPosition, // Default to Delhi
               zoom: 14,
             ),
             onMapCreated: (GoogleMapController controller) {
