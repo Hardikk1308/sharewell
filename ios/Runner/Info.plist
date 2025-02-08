@@ -45,5 +45,29 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Location Permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show your current position on the map.</string>
+
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location for continuous tracking.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to provide navigation and tracking services.</string>
+
+	<!-- Required for Google Maps -->
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+
+	<!-- Background location updates -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+
+	<!-- Google Maps API Key -->
+	<key>GMSApiKey</key>
+	<string>AIzaSyA54kELek3k5YRbmU5THEC32UyQWlnnELY</string>
 </dict>
 </plist>
