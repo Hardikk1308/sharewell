@@ -20,8 +20,8 @@ class _HomepageState extends State<Homepage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? user;
   File? _image;
-  String? _expiryDate; // To store the expiry date fetched from the backend
-  bool _isLoading = false; // To show a loading indicator during API call
+  String? _expiryDate; // To store expiry date from backend
+  bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -39,24 +39,20 @@ class _HomepageState extends State<Homepage> {
   }
 
   Future<void> _captureImage() async {
-    // Request camera permission
     var status = await Permission.camera.request();
 
     if (status.isGranted) {
-      // Capture image using camera
       final pickedFile = await _picker.pickImage(source: ImageSource.camera);
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
-          _expiryDate = null; // Reset expiry date when a new image is captured
+          _expiryDate = null; // Reset expiry date
         });
-        // Send image to backend for processing
         await _sendImageToFastAPI(_image!);
       }
     } else if (status.isPermanentlyDenied) {
-      // Show a dialog to guide the user to app settings
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Camera permission permanently denied. Please enable it in settings.")),
+        SnackBar(content: Text("Camera permission permanently denied. Enable it in settings.")),
       );
       openAppSettings();
     } else {
@@ -68,29 +64,25 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _sendImageToFastAPI(File image) async {
     setState(() {
-      _isLoading = true; // Show loading indicator
+      _isLoading = true;
     });
 
     try {
-      // Create a multipart request
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('https://f167-112-196-126-3.ngrok-free.app/analyzze-food/'), // Replace with your backend URL
+        Uri.parse('https://7486-117-203-246-41.ngrok-free.app/analyze-food/'),
       );
 
-      // Attach the image file to the request
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
-      // Send the request to the backend
       var response = await request.send();
 
       if (response.statusCode == 200) {
-        // Parse the response from the backend
         var responseData = await response.stream.bytesToString();
         var jsonResponse = json.decode(responseData);
 
         setState(() {
-          _expiryDate = jsonResponse['expiry_date']; // Extract expiry date from response
+          _expiryDate = jsonResponse['expiry_date']; // Extract expiry date
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -98,16 +90,16 @@ class _HomepageState extends State<Homepage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to detect expiry date. Status code: ${response.statusCode}")),
+          SnackBar(content: Text("Failed to detect expiry date. Status: ${response.statusCode}")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error occurred while sending image: $e")),
+        SnackBar(content: Text("Error occurred: $e")),
       );
     } finally {
       setState(() {
-        _isLoading = false; // Hide loading indicator
+        _isLoading = false;
       });
     }
   }
@@ -117,26 +109,25 @@ class _HomepageState extends State<Homepage> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.background,
-        drawer: MyDrawer(logoutCallback: _logout), // Side Navigation Drawer
+        drawer: MyDrawer(logoutCallback: _logout),
         body: Builder(
           builder: (context) => Column(
             children: [
-              SizedBox(height: 50), // Space for status bar
+              SizedBox(height: 50),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.menu, color: Colors.black, size: 30), // Custom Drawer Icon
+                      icon: Icon(Icons.menu, color: Colors.black, size: 30),
                       onPressed: () {
-                        Scaffold.of(context).openDrawer(); // Open drawer manually
+                        Scaffold.of(context).openDrawer();
                       },
                     ),
                     Text(
                       'Hi ${user?.displayName ?? "User"}',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -150,7 +141,7 @@ class _HomepageState extends State<Homepage> {
               if (_isLoading)
                 Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: CircularProgressIndicator(), // Show loading indicator during API call
+                  child: CircularProgressIndicator(),
                 ),
               if (_image != null)
                 Padding(
@@ -160,11 +151,41 @@ class _HomepageState extends State<Homepage> {
               if (_expiryDate != null)
                 Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    "Detected Expiry Date:\n$_expiryDate",
-                    textAlign: TextAlign.center,
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                  child: AnimatedOpacity(
+                    duration: Duration(milliseconds: 500),
+                    opacity: 1.0,
+                    child: Card(
+                      color: Colors.green.shade100,
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Detected Expiry Date",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              _expiryDate!,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
             ],

@@ -9,7 +9,8 @@ from PIL import Image, ImageEnhance
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from torchvision import transforms
 from dotenv import load_dotenv
-from model_architecture import Model  
+from model_architecture import Model 
+
 router = APIRouter()
 
 # Load environment variables
@@ -50,34 +51,29 @@ labels_freshness = ["Fresh", "Rotten"]
 
 # ================== FUNCTION: Classify Freshness ==================
 def classify_freshness(image_bytes):
-    """Classifies whether the food is fresh or rotten"""
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = classification_transform(image).unsqueeze(0).to(device)
 
         with torch.no_grad():
             output = model(image)
-
-            # If output is a tuple, extract the first element (logits)
-            if isinstance(output, tuple):
+            if isinstance(output, tuple):  # Handle tuple output
                 output = output[0]
 
             probabilities = torch.nn.functional.softmax(output, dim=1)
             confidence, predicted = torch.max(probabilities, 1)
 
-            return labels_freshness[predicted.item()], confidence.item()
+            return {"label": labels_freshness[predicted.item()], "confidence": confidence.item()}
     except Exception as e:
-        return f"Error in classification: {str(e)}", 0.0
+        raise ValueError(f"Error in classification: {str(e)}")
+
 
 # ================== FUNCTION: Google OCR for Expiry Detection ==================
 def google_ocr(image_bytes):
-    """Send image to Google Cloud Vision OCR API and extract text."""
     try:
         base64_image = base64.b64encode(image_bytes).decode()
-
         url = f"https://vision.googleapis.com/v1/images:annotate?key={GOOGLE_CLOUD_VISION_API_KEY}"
         headers = {"Content-Type": "application/json"}
-
         payload = {
             "requests": [{
                 "image": {"content": base64_image},
@@ -89,21 +85,20 @@ def google_ocr(image_bytes):
         response.raise_for_status()
 
         result = response.json()
-
         if "responses" in result and result["responses"][0].get("fullTextAnnotation"):
             return result["responses"][0]["fullTextAnnotation"]["text"]
 
-        return None  # Return None if no text is detected
+        return None  # No text detected
     except requests.RequestException as e:
-        return f"Error in Google OCR API: {str(e)}"
+        raise RuntimeError(f"Google OCR API error: {str(e)}")
     except Exception as e:
-        return f"Unexpected error during OCR: {str(e)}"
+        raise RuntimeError(f"Unexpected error during OCR: {str(e)}")
+
 
 # ================== FUNCTION: Extract & Format Expiry Date ==================
 def extract_expiry_date(text):
-    """Extract expiry date while avoiding 'PKD' (Packaged Date) entries."""
     if not text or not isinstance(text, str):
-        return None  # Return None if input is invalid
+        return None
 
     date_patterns = [
         r"(?i)(?:USE BY|EXP(?:IRES)?|BEST BEFORE|EXPIRES)[\s:]*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
@@ -112,11 +107,13 @@ def extract_expiry_date(text):
     ]
 
     for pattern in date_patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            return format_expiry_date(match.group(1))  # Standardize format
-
+        matches = re.findall(pattern, text)
+        valid_dates = [format_expiry_date(date) for date in matches if "PKD" not in text.upper()]
+        
+        if valid_dates:
+            return min(valid_dates) 
     return None
+
 
 def format_expiry_date(date_str):
     """Standardize expiry date format to YYYY-MM-DD"""
@@ -130,41 +127,43 @@ def format_expiry_date(date_str):
 # ================== API Endpoint: Detect Freshness & Expiry ==================
 @router.post("/analyze-food/")
 async def analyze_food(file: UploadFile = File(...)):
-    """API Endpoint to detect expiry date and classify fresh vs rotten"""
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
+
     try:
         image_bytes = await file.read()
 
-        # ===== Step 1: Detect Expiry Date using Google OCR =====
-        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("RGB")  # Keep RGB format
+        # Step 1: Detect Expiry Date using Google OCR
+        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         enhancer = ImageEnhance.Contrast(image_for_ocr)
-        image_for_ocr = enhancer.enhance(2)  # Increase contrast
+        image_for_ocr = enhancer.enhance(2)
 
-        # Convert enhanced image to bytes for OCR
         image_io = io.BytesIO()
         image_for_ocr.save(image_io, format="PNG")
         processed_image_bytes = image_io.getvalue()
 
         extracted_text = google_ocr(processed_image_bytes)
+        expiry_date = extract_expiry_date(extracted_text)
 
-        expiry_date = extract_expiry_date(extracted_text) if extracted_text and not extracted_text.startswith("Error") else None
+        # Step 2: Classify Freshness
+        freshness_result = classify_freshness(image_bytes)
+
+        response_data = {
+            "type": "Fresh Produce" if not expiry_date else "Packaged Product",
+            "freshness": freshness_result["label"],
+            "confidence_score": freshness_result["confidence"],
+            "message": f"The product appears to be {freshness_result['label']}."
+        }
 
         if expiry_date:
-            return {
-                "type": "Packaged Product",
+            response_data.update({
                 "expiry_date": expiry_date,
-                "full_text": extracted_text or "No text detected",
-                "message": "Expiry date detected."
-            }
+                "full_text": extracted_text or "",
+                "message": "Expiry date detected, classified as a packaged product."
+            })
 
-        # ===== Step 2: If expiry date is not found, classify freshness =====
-        freshness_result, confidence_score = classify_freshness(image_bytes)
+        return response_data
 
-        return {
-            "type": "Fresh Produce",
-            "freshness": freshness_result,
-            "confidence_score": confidence_score,
-            "message": f"The product appears to be {freshness_result}."
-        }
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+    
