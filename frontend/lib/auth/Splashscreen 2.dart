@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../pages/Role.dart';
+import 'login.dart';
 import 'signup.dart';
 
 class SplashScreen1 extends StatelessWidget {

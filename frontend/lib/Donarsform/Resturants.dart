@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../common/basic_app_buttons.dart';
 import '../constant/App_Colour.dart';
 import '../constant/customtextfield.dart';
@@ -8,19 +9,48 @@ class RestaurantForm extends StatefulWidget {
   const RestaurantForm({super.key});
 
   @override
-  State<RestaurantForm> createState() => _RestaurantFormState();
+  _RestaurantFormState createState() => _RestaurantFormState();
 }
 
 class _RestaurantFormState extends State<RestaurantForm> {
-  final TextEditingController restaurantNameController =
-      TextEditingController();
-  final TextEditingController OwnersNameController = TextEditingController();
+  final TextEditingController restaurantNameController = TextEditingController();
+  final TextEditingController ownersNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController NumberController = TextEditingController();
-  final TextEditingController AddressController = TextEditingController();
-  final TextEditingController PincodeController = TextEditingController();
-  final TextEditingController CityController = TextEditingController();
-  final TextEditingController GSTINController = TextEditingController();
+  final TextEditingController numberController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController pincodeController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController gstinController = TextEditingController();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _submitData() async {
+    try {
+      // Collecting form data
+      Map<String, dynamic> restaurantData = {
+        "restaurantName": restaurantNameController.text.trim(),
+        "ownerName": ownersNameController.text.trim(),
+        "email": emailController.text.trim(),
+        "phoneNumber": numberController.text.trim(),
+        "address": addressController.text.trim(),
+        "pincode": pincodeController.text.trim(),
+        "city": cityController.text.trim(),
+        "gstin": gstinController.text.trim(),
+        "timestamp": FieldValue.serverTimestamp(), // Adds timestamp
+      };
+
+      // Store data in Firestore
+      await _firestore.collection("restaurants").add(restaurantData);
+
+      // Show success dialog
+      _showSuccessDialog(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error submitting data: $e")),
+      );
+    }
+  }
+
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -29,22 +59,22 @@ class _RestaurantFormState extends State<RestaurantForm> {
           backgroundColor: AppColors.background,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-          contentPadding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          contentPadding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle,
+              const Icon(Icons.check_circle,
                   color: Colors.green, size: 60), // Success icon
-              SizedBox(height: 20),
-              Text(
-                "Donor successfully created!",
+              const SizedBox(height: 20),
+              const Text(
+                "Restaurant successfully created!",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => DonorDashboard()),
                   );
@@ -55,7 +85,7 @@ class _RestaurantFormState extends State<RestaurantForm> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text(
+                child: const Text(
                   "OK",
                   style: TextStyle(
                     color: Colors.black,
@@ -71,184 +101,73 @@ class _RestaurantFormState extends State<RestaurantForm> {
     );
   }
 
-  @override
+  Widget _buildInputField(String label, String hint, TextEditingController controller, IconData icon,
+      {TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: CustomFormField(
+        Keyboard: keyboardType,
+        labelText: label,
+        hintText: hint,
+        controller: controller,
+        icon: icon,
+      ),
+    );
+  }
+
+ @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text(
-                "Restaurant Name",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLabel("Resturant Name"),
+          _buildTextField(restaurantNameController, 'Name', 'Enter Resturant Name', Icons.restaurant),
+          _buildLabel("Owner Name"),
+          _buildTextField(ownersNameController, 'Name', 'Enter Your Name', Icons.person),
+          _buildLabel("Email"),
+          _buildTextField(emailController, 'Email', 'Enter Email', Icons.credit_card),
+          _buildLabel("Phone Number"),
+          _buildTextField(numberController, 'Phone Number', 'Enter Phone Number', Icons.phone),
+          _buildLabel("Address"),
+          _buildTextField(addressController, 'Address', 'Enter Address', Icons.location_on),
+          _buildLabel("Pincode"),
+          _buildTextField(pincodeController, 'Pincode', 'Enter Pincode', Icons.pin),
+          _buildLabel("City"),
+          _buildTextField(cityController, 'City', 'Enter your city', Icons.location_city),
+          _buildLabel("GSTIN Number"),
+          _buildTextField(gstinController, 'GSTIN', 'Enter your GSTIN Number', Icons.numbers),
+          Center(
+            child: BasicAppButton(
+              text: 'Submit',
+              onPressed: _submitData,
             ),
-            SizedBox(height: 5),
-            CustomFormField(
-              Keyboard: TextInputType.text,
-              labelText: 'Restaurant Name',
-              hintText: 'Enter Restaurant Name',
-              controller: restaurantNameController,
-              icon: Icons.restaurant,
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text("Owner Name",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  )),
-            ),
-            SizedBox(height: 5),
-            CustomFormField(
-              Keyboard: TextInputType.text,
-              labelText: 'Owner Name',
-              hintText: 'Enter Owner Name',
-              controller: OwnersNameController,
-              icon: Icons.person,
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text(
-                "Email Name",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            SizedBox(height: 5),
-            CustomFormField(
-              Keyboard: TextInputType.emailAddress,
-              labelText: 'Email Name',
-              hintText: 'Enter Email Name',
-              controller: emailController,
-              icon: Icons.mail,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text(
-                "Phone Number",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            CustomFormField(
-              Keyboard: TextInputType.number,
-              labelText: 'Phone Number',
-              hintText: 'Phone Number',
-              controller: NumberController,
-              icon: Icons.call,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text(
-                "Address",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            CustomFormField(
-              Keyboard: TextInputType.text,
-              labelText: 'Address',
-              hintText: 'Enter Address',
-              controller: AddressController,
-              icon: Icons.location_on,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text(
-                "PinCode",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            CustomFormField(
-              Keyboard: TextInputType.number,
-              labelText: 'PinCode',
-              hintText: 'Enter PinCode',
-              controller: PincodeController,
-              icon: Icons.pin,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 35),
-              child: const Text(
-                "City",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            CustomFormField(
-              Keyboard: TextInputType.text,
-              labelText: 'City',
-              hintText: 'Enter City ',
-              controller: CityController,
-              icon: Icons.location_city,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: const Text(
-                "GSTIN Number",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            CustomFormField(
-              Keyboard: TextInputType.number,
-              labelText: 'GSTIN Number',
-              hintText: 'GSTIN Number',
-              controller: GSTINController,
-              icon: Icons.numbers,
-            ),
-            SizedBox(
-              height: 40,
-            ),
-            Center(
-              child: BasicAppButton(
-                text: 'Submit',
-                onPressed: () {
-                  _showSuccessDialog(context);
-                },
-              ),
-            ),
-            SizedBox(
-              height: 50,
-            ),
-          ],
-        ),
+          ),
+          SizedBox(height: 50),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String labelText, String hintText, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 5),
+      child: CustomFormField(
+        Keyboard: TextInputType.text,
+        labelText: labelText,
+        hintText: hintText,
+        controller: controller,
+        icon: icon,
       ),
     );
   }

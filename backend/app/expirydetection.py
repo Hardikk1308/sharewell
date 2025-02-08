@@ -132,12 +132,9 @@ async def analyze_food(file: UploadFile = File(...)):
 
     try:
         image_bytes = await file.read()
-
-        # Debugging: Check if image data is received
-        if not image_bytes or len(image_bytes) < 100:  # Small files could indicate an issue
+        if not image_bytes or len(image_bytes) < 100: 
             raise HTTPException(status_code=400, detail="Uploaded image is empty or corrupted.")
 
-        # Log metadata for debugging
         print(f"Received image: {file.filename}, Size: {len(image_bytes)} bytes, Type: {file.content_type}")
 
         freshness_result = classify_freshness(image_bytes)
@@ -171,6 +168,6 @@ async def analyze_food(file: UploadFile = File(...)):
         }
 
     except HTTPException:
-        raise  # Re-raise known HTTP errors
+        raise 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
