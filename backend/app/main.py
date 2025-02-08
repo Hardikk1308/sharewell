@@ -1,5 +1,6 @@
 import sys
 import os
+import uvicorn
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -19,3 +20,6 @@ app.include_router(expiry_router)
 def root():
     return {"message": "Welcome to Sharewell API"}
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080)) 
+    uvicorn.run(app, host="0.0.0.0", port=port)

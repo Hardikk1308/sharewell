@@ -23,7 +23,7 @@ class _Individual_FormState extends State<Individual_Form> {
   final TextEditingController cityController = TextEditingController();
   final TextEditingController aadharcardController = TextEditingController();
 
-  List<File> _images = [];
+  final List<File> _images = [];
 
   void _showSuccessDialog(BuildContext context) {
     showDialog(
