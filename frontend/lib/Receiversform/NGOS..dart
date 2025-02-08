@@ -52,7 +52,7 @@ class _NGOSState extends State<NGOS> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => HomePageReceiver()),
+                    MaterialPageRoute(builder: (context) => ReceiverHomePage()),
                   );
                 },
                 style: ElevatedButton.styleFrom(

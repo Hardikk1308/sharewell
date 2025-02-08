@@ -105,7 +105,7 @@ class _RoleState extends State<Role> {
               ],
             ),
           ),
-          SizedBox(height: 300),
+          SizedBox(height: 300),                    
           BasicAppButton(
             text: 'Continue',
             onPressed: () {
@@ -115,7 +115,7 @@ class _RoleState extends State<Role> {
               } else if (selectedOption == "Donor") {
                 nextPage = Donarspage();
               } else {
-                nextPage = Volunteers();
+                nextPage = VolunteerDetailsPage();
               }
 
               Navigator.push(

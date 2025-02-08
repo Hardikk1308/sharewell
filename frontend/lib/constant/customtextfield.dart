@@ -20,7 +20,7 @@ class CustomFormField extends StatefulWidget {
     this.obscureText = false,
     required this.controller,
     this.validator,
-    required this.icon, required this.Keyboard,
+    required this.icon, required this.Keyboard, 
   });
   final border = OutlineInputBorder(
     borderSide: BorderSide(color: Colors.black),

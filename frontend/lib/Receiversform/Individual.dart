@@ -50,7 +50,7 @@ class _Individual_FormState extends State<Individual_Form> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => HomePageReceiver()));
+                          builder: (context) => ReceiverHomePage()));
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 6,

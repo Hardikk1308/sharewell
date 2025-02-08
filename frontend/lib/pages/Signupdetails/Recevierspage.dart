@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../Reciversform/Individual.dart';
-import '../../Reciversform/NGOS..dart';
+import '../../Receiversform/Individual.dart';
+import '../../Receiversform/NGOS..dart';
 import '../../common/Cards/Card 1.dart';
 import '../../constant/App_Colour.dart';
 
