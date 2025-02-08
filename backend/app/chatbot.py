@@ -16,7 +16,7 @@ if not GEMINI_API_KEY:
     raise ValueError("Missing Google Gemini API Key in .env file.")
 
 # Initialize Gemini Client
-client = genai.Client(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
 
 # Define the app context to guide the chatbot
 APP_CONTEXT = """
@@ -36,7 +36,7 @@ async def chat_with_gemini(user_message: str):
     """
     try:
         # Generate response using Gemini API
-        response = client.models.generate_content_stream(
+        response = genai.generate_content_stream(
             model="gemini-2.0-flash",
             contents=[f"App Context: {APP_CONTEXT}\nUser Query: {user_message}"]
         )
