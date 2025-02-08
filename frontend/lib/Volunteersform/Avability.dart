@@ -12,44 +12,71 @@ class AvailabilityPage extends StatefulWidget {
 }
 
 class _AvailabilityPageState extends State<AvailabilityPage> {
-  String _selectedTimeSlot = "";
+  String? _selectedTimeSlot; // Use nullable String for better null handling
+
   final List<String> _timeSlots = [
     "Morning 9 to 11",
     "Afternoon 1 to 3",
-    "Afternoon 1 to 3",
-    "Afternoon 1 to 3"
-  ];
+    "Evening 5 to 7",
+  ]; // Removed duplicate slots
+
   final List<bool> _selectedDays = List.filled(7, false);
   bool _allWeekdays = false;
   bool _allWeekend = false;
   bool _anyDay = false;
-
-  void _submitForm() {
-    if (_selectedTimeSlot.isEmpty) {
-      _showDialog("Error", "Please select a time slot.");
-    } else {
-      _showDialog("Success", "Your availability has been submitted!");
-    }
-  }
 
   void _showDialog(String title, String message) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: AppColors.background,
+
           title: Text(title),
+          titleTextStyle: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black
+
+          ),
           content: Text(message),
+          contentTextStyle: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Colors.black
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("OK"),
+              child: Text("OK", style: TextStyle(color: Colors.deepPurple)),
             )
           ],
         );
       },
     );
+  }
+
+  void _updateSelectedDays() {
+    if (_allWeekdays) {
+      setState(() {
+        _selectedDays.setAll(1, List.filled(5, true)); // Mon to Fri
+      });
+    } else if (_allWeekend) {
+      setState(() {
+        _selectedDays[0] = true; // Sunday
+        _selectedDays[6] = true; // Saturday
+      });
+    } else if (_anyDay) {
+      setState(() {
+        _selectedDays.setAll(0, List.filled(7, true)); // All Days
+      });
+    } else {
+      setState(() {
+        _selectedDays.setAll(0, List.filled(7, false)); // Reset
+      });
+    }
   }
 
   @override
@@ -87,7 +114,7 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
 
                 Column(
                   children: _timeSlots.map((slot) {
-                    return RadioListTile(
+                    return RadioListTile<String>(
                       title: Text(slot),
                       value: slot,
                       groupValue: _selectedTimeSlot,
@@ -100,7 +127,7 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
                   }).toList(),
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 30),
 
                 // Day & Date Selection
                 Padding(
@@ -129,7 +156,7 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
                           padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: _selectedDays[index]
-                                ? Colors.blue
+                                ? Colors.deepPurple
                                 : Colors.grey[300],
                             borderRadius: BorderRadius.circular(5),
                           ),
@@ -154,14 +181,11 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
                       _allWeekend = false;
                       _anyDay = false;
                     });
+                    _updateSelectedDays();
                   },
                 ),
-                Divider(
-                  color: Colors.grey,
-                  thickness: 1,
-                  indent: 2,
-                  endIndent: 2,
-                ),
+                Divider(color: Colors.grey, thickness: 1),
+
                 CheckboxListTile(
                   title: Text("All Weekend"),
                   value: _allWeekend,
@@ -171,14 +195,11 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
                       _allWeekdays = false;
                       _anyDay = false;
                     });
+                    _updateSelectedDays();
                   },
                 ),
-                Divider(
-                  color: Colors.grey,
-                  thickness: 1,
-                  indent: 2,
-                  endIndent: 2,
-                ),
+                Divider(color: Colors.grey, thickness: 1),
+
                 CheckboxListTile(
                   title: Text("Any Day"),
                   value: _anyDay,
@@ -188,20 +209,28 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
                       _allWeekdays = false;
                       _allWeekend = false;
                     });
+                    _updateSelectedDays();
                   },
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 120),
 
-                const SizedBox(height: 20),
                 Center(
                   child: BasicAppButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Volunteers(),
-                        ),
-                      );
+                      if (_selectedTimeSlot == null) {
+                        _showDialog(
+                          "Error",
+                          "Please select a time slot.",
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                VolunteerHomePage(), // Ensure Volunteers() exists
+                          ),
+                        );
+                      }
                     },
                     text: 'Continue',
                   ),

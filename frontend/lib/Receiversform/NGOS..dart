@@ -21,13 +21,6 @@ class _NGOSState extends State<NGOS> {
   final TextEditingController CityController = TextEditingController();
   final TextEditingController GovernmentidController = TextEditingController();
 
-  String? selectedGovID;
-  List<String> govIDOptions = [
-    'Aadhar Card',
-    'PAN Card',
-    'Voter ID',
-  ];
-
   void _showSuccessDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -106,36 +99,10 @@ class _NGOSState extends State<NGOS> {
             _buildLabel("City"),
             _buildTextField(
                 CityController, 'City', 'Enter City', Icons.location_city),
-            _buildLabel("Government ID"),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 25),
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                ),
-                value: selectedGovID,
-                hint: Text("Select Government ID"),
-                items: govIDOptions.map((String id) {
-                  return DropdownMenuItem<String>(
-                    value: id,
-                    child: Text(id),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedGovID = newValue;
-                  });
-                },
-              ),
-            ),
-            SizedBox(height: 10),
-            _buildLabel('Government ID number'),
-            _buildTextField(GovernmentidController, 'Government ID number',
-                'Enter Number', Icons.numbers),
+            _buildLabel("License Number"),
+
+            _buildTextField(GovernmentidController, 'License Number',
+                'License Number', Icons.badge),
             SizedBox(height: 40),
             Center(
               child: BasicAppButton(

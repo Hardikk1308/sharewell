@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../auth/login.dart';
 import '../constant/App_Colour.dart';
 import '../constant/SideNavgationbar.dart';
+import 'Chatbot.dart';
 import 'Donation.dart';
 
 class DonorDashboard extends StatefulWidget {
@@ -51,7 +52,6 @@ class _DonorDashboardState extends State<DonorDashboard>
             },
           ),
           backgroundColor: Colors.white,
-      
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -85,8 +85,19 @@ class _DonorDashboardState extends State<DonorDashboard>
                 borderRadius: BorderRadius.circular(50),
               ),
               backgroundColor: Colors.deepPurple,
-              onPressed: () {}, child: Icon(Icons.chat,
-            color: Colors.white,)),
+              // onPressed: () {},
+              onPressed: () { 
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatScreen()),
+                );
+               },
+              child: Icon(
+                Icons.chat,
+                color: Colors.white,
+              ),
+            ),
+           
           ),
         ),
       ]),
