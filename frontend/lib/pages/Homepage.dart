@@ -23,7 +23,7 @@ class _HomepageState extends State<Homepage> {
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
-  final String _apiUrl = " https://c8dd-112-196-126-3.ngrok-free.app/analyze-food/";
+  final String _apiUrl = " https://120a-117-203-246-41.ngrok-free.app/analyze-food/";
 
   Future<void> _captureImage() async {
     var status = await Permission.camera.request();
