@@ -6,6 +6,7 @@ import '../constant/App_Colour.dart';
 import '../constant/SideNavgationbar.dart';
 import 'Chatbot.dart';
 import 'Donation.dart';
+import 'map_page.dart';
 
 class DonorDashboard extends StatefulWidget {
   const DonorDashboard({super.key});
@@ -86,18 +87,17 @@ class _DonorDashboardState extends State<DonorDashboard>
               ),
               backgroundColor: Colors.deepPurple,
               // onPressed: () {},
-              onPressed: () { 
-              Navigator.push(
+              onPressed: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => ChatScreen()),
                 );
-               },
+              },
               child: Icon(
                 Icons.chat,
                 color: Colors.white,
               ),
             ),
-           
           ),
         ),
       ]),
@@ -323,7 +323,16 @@ class _DonorDashboardState extends State<DonorDashboard>
             ),
           ],
         ),
-        const Icon(Icons.settings, color: Colors.black),
+         IconButton(
+           icon: const Icon(Icons.travel_explore, color: Colors.black, size: 30),
+           onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MapPage()),
+                );
+           },
+         ) 
       ],
     );
   }

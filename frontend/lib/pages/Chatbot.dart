@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -49,7 +50,13 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chatbot")),
+      appBar: AppBar(title: Text("Chatbot",
+
+      style: GoogleFonts.bricolageGrotesque(
+        fontSize: 25,
+        fontWeight: FontWeight.w400,
+        color: Colors.black,
+      ))),
       body: Column(
         children: [
           Expanded(
@@ -65,13 +72,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     margin: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
                     decoration: BoxDecoration(
                       color: messages[index]["sender"] == "user"
-                          ? Colors.blue
-                          : Colors.grey[300],
+                          ? Colors.deepPurple
+                          : Colors.grey[200],
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       messages[index]["message"]!,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                           color: messages[index]["sender"] == "user"
                               ? Colors.white
                               : Colors.black),
@@ -82,7 +89,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(bottom: 15,right: 10,left: 10),
             child: Row(
               children: [
                 Expanded(
@@ -90,7 +97,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     controller: _controller,
                     decoration: InputDecoration(
                       hintText: "Type a message",
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30)
+                      ),
                     ),
                   ),
                 ),
