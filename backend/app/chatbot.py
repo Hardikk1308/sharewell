@@ -2,8 +2,11 @@ import os
 from fastapi import APIRouter, HTTPException
 from dotenv import load_dotenv
 from os import environ as env
-import google.generativeai as genai
+from google.generativeai import configure, GenerativeModel
+from pydantic import BaseModel
 
+class ChatRequest(BaseModel):
+    message: str
 # Load environment variables
 load_dotenv()
 
@@ -11,12 +14,13 @@ load_dotenv()
 router = APIRouter()
 
 # Get API key from environment
-GEMINI_API_KEY = "AIzaSyAJyqp5ka6N3OvCrOTHsm724Vn-dKQeA0E"
+GEMINI_API_KEY = "AIzaSyATo_VGl0FUVWZAi3yYCKsRleyJIfy0M78"
 if not GEMINI_API_KEY:
     raise ValueError("Missing Google Gemini API Key in .env file.")
 
 # Initialize Gemini Client
-genai.configure(api_key=GEMINI_API_KEY)
+configure(api_key=GEMINI_API_KEY)
+model = GenerativeModel("gemini-1.5-flash")
 
 # Define the app context to guide the chatbot
 APP_CONTEXT = """
@@ -30,18 +34,13 @@ Users can ask about how to donate, find donations, track deliveries, earn reward
 """
 
 @router.post("/chat/")
-async def chat_with_gemini(user_message: str):
+async def chat_with_gemini(request: ChatRequest):
     """
     Handles chatbot interactions based on the Sharewell app context.
     """
+    prompt= f"App Context: {APP_CONTEXT}\nUser Query: {request.message}"
     try:
-        # Generate response using Gemini API
-        response = genai.generate_content_stream(
-            model="gemini-2.0-flash",
-            contents=[f"App Context: {APP_CONTEXT}\nUser Query: {user_message}"]
-        )
-
-        # Combine the streamed response into a single string
+        response = model.generate_content(prompt)
         chatbot_response = "".join(chunk.text for chunk in response)
         return {"response": chatbot_response}
     except Exception as e:

@@ -11,35 +11,37 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController _controller = TextEditingController();
   List<Map<String, String>> messages = [];
 
-  final String openAIKey = "YOUR_OPENAI_API_KEY"; // Replace with your key
+  final String backendUrl = "https://120a-117-203-246-41.ngrok-free.app/api/chat/"; // Replace with your backend URL
 
   Future<void> sendMessage(String userMessage) async {
     setState(() {
       messages.add({"sender": "user", "message": userMessage});
     });
 
-    var url = Uri.parse("https://api.openai.com/v1/chat/completions");
-    var response = await http.post(
-      url,
-      headers: {
-        "Authorization": "Bearer $openAIKey",
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "model": "gpt-3.5-turbo",
-        "messages": [
-          {"role": "system", "content": "You are a helpful chatbot."},
-          {"role": "user", "content": userMessage}
-        ],
-      }),
-    );
+    try {
+      var response = await http.post(
+        Uri.parse(backendUrl),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({"message": userMessage}),
+      );
 
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      String botReply = data['choices'][0]['message']['content'];
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        String botReply = data['response']; // Adjust based on your backend response format
 
+        setState(() {
+          messages.add({"sender": "bot", "message": botReply});
+        });
+      } else {
+        setState(() {
+          messages.add({"sender": "bot", "message": "Failed to get response from Gemini."});
+        });
+      }
+    } catch (e) {
       setState(() {
-        messages.add({"sender": "bot", "message": botReply});
+        messages.add({"sender": "bot", "message": "Error: ${e.toString()}."});
       });
     }
   }
@@ -87,8 +89,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                        hintText: "Type a message",
-                        border: OutlineInputBorder()),
+                      hintText: "Type a message",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 IconButton(
