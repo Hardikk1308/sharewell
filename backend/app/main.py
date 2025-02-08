@@ -9,12 +9,14 @@ from app.routes import user
 from app.services.database import get_db
 from expirydetection import router as expiry_router
 from fastapi.middleware.cors import CORSMiddleware
+from chatbot import router as chatbot_router
 
 app = FastAPI(title="Sharewell API", version="1.0")
 
 # Include routes
 app.include_router(user.router, prefix="/users", tags=["Users"])
 app.include_router(expiry_router)
+app.include_router(chatbot_router, prefix="/api")
 
 @app.get("/")
 def root():

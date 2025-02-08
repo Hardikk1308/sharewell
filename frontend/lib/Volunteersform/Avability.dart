@@ -142,7 +142,7 @@ class _AvailabilityPageState extends State<AvailabilityPage> {
                       _allWeekdays = value!;
                       _allWeekend = false;
                       _anyDay = false;
-                    });
+                    });+
                   },
                 ),
                 CheckboxListTile(
