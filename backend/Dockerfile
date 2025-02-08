@@ -1,17 +1,19 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9
+# Use the official Python image as base
+FROM python:3.10
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
 
-# Install FastAPI dependencies
-RUN pip install --no-cache-dir fastapi uvicorn google-cloud-vision Pillow requests
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the FastAPI port
-EXPOSE 8000
+# Copy the entire backend code into the container
+COPY . .
 
-# Command to run FastAPI
-CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Expose the port FastAPI will run on
+EXPOSE 8080
+
+# Start FastAPI with Uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

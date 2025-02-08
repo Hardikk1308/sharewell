@@ -4,18 +4,18 @@ import requests
 import base64
 import os
 import torch
+from datetime import datetime
 from PIL import Image, ImageEnhance
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from torchvision import transforms
 from dotenv import load_dotenv
-from model_architecture import Model  # Import the Model class
-
+from model_architecture import Model  
 router = APIRouter()
 
 # Load environment variables
 load_dotenv()
 
-GOOGLE_CLOUD_VISION_API_KEY = "AIzaSyA54kELek3k5YRbmU5THEC32UyQWlnnELY4"
+GOOGLE_CLOUD_VISION_API_KEY = "AIzaSyAlilJKsjPq1Ge8SECX9aF0GIvabosLvv4"
 if not GOOGLE_CLOUD_VISION_API_KEY:
     raise ValueError("Missing Google Cloud Vision API Key in environment variables.")
 
@@ -29,7 +29,7 @@ if not os.path.exists(MODEL_DIR):
     os.makedirs(MODEL_DIR)
 
 if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
+    raise HTTPException(status_code=500, detail="Model file not found. Please upload fresh_stale_model.pth.")
 
 # ================== MODEL: Fresh vs Rotten Classifier ==================
 # Load trained model
@@ -50,6 +50,7 @@ labels_freshness = ["Fresh", "Rotten"]
 
 # ================== FUNCTION: Classify Freshness ==================
 def classify_freshness(image_bytes):
+    """Classifies whether the food is fresh or rotten"""
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = classification_transform(image).unsqueeze(0).to(device)
@@ -67,7 +68,6 @@ def classify_freshness(image_bytes):
             return labels_freshness[predicted.item()], confidence.item()
     except Exception as e:
         return f"Error in classification: {str(e)}", 0.0
-
 
 # ================== FUNCTION: Google OCR for Expiry Detection ==================
 def google_ocr(image_bytes):
@@ -99,7 +99,7 @@ def google_ocr(image_bytes):
     except Exception as e:
         return f"Unexpected error during OCR: {str(e)}"
 
-# ================== FUNCTION: Extract Expiry Date ==================
+# ================== FUNCTION: Extract & Format Expiry Date ==================
 def extract_expiry_date(text):
     """Extract expiry date while avoiding 'PKD' (Packaged Date) entries."""
     if not text or not isinstance(text, str):
@@ -114,9 +114,18 @@ def extract_expiry_date(text):
     for pattern in date_patterns:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            return match.group(1)
+            return format_expiry_date(match.group(1))  # Standardize format
 
     return None
+
+def format_expiry_date(date_str):
+    """Standardize expiry date format to YYYY-MM-DD"""
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%m-%d-%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return date_str  # Return as-is if parsing fails
 
 # ================== API Endpoint: Detect Freshness & Expiry ==================
 @router.post("/analyze-food/")
@@ -126,7 +135,7 @@ async def analyze_food(file: UploadFile = File(...)):
         image_bytes = await file.read()
 
         # ===== Step 1: Detect Expiry Date using Google OCR =====
-        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("L")  # Grayscale for OCR
+        image_for_ocr = Image.open(io.BytesIO(image_bytes)).convert("RGB")  # Keep RGB format
         enhancer = ImageEnhance.Contrast(image_for_ocr)
         image_for_ocr = enhancer.enhance(2)  # Increase contrast
 
@@ -143,9 +152,11 @@ async def analyze_food(file: UploadFile = File(...)):
             return {
                 "type": "Packaged Product",
                 "expiry_date": expiry_date,
-                "full_text": extracted_text or ""
+                "full_text": extracted_text or "No text detected",
+                "message": "Expiry date detected."
             }
 
+        # ===== Step 2: If expiry date is not found, classify freshness =====
         freshness_result, confidence_score = classify_freshness(image_bytes)
 
         return {
