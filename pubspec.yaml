@@ -2,7 +2,7 @@ name: shareweel_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -31,11 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler:
-  image_picker:
+  image_picker: ^1.1.2
   http:
-  firebase_storage: latest_version
-  image_picker: latest_version
-  permission_handler: latest_version
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -49,10 +46,17 @@ dependencies:
   geocoding: ^3.0.0
   google_maps_flutter: ^2.10.0
   intl: ^0.20.2
+  flutter_spinkit: ^5.2.1
+  google_fonts: ^6.2.1
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  flutter_launcher_icons: ^0.14.3
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#673AB7"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -66,7 +70,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -74,9 +77,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    -  assets/images/
-    -  assets/images/me.jpg
-
+    - assets/images/
+    - assets/images/me.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

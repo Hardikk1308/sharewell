@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'auth/signup.dart';
+import 'auth/splashscreen 1.dart';
 import 'firebase_options.dart';
 import 'pages/Homepage.dart';
 
@@ -30,11 +30,10 @@ class MyApp extends StatelessWidget {
           } else if (snapshot.data != null) {
             return const Homepage();
           } else {
-            return const Signup();
+            return SplashScreen();
           }
         },
       ),
     );
   }
 }
-    

@@ -22,7 +22,7 @@ class _RoleState extends State<Role> {
   }
 
   Widget buildSelectableContainer(
-      String title, String subtitle, String option) {
+      String title, String subtitle, String option, double width) {
     bool isSelected = selectedOption == option;
 
     return GestureDetector(
@@ -30,17 +30,18 @@ class _RoleState extends State<Role> {
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 8),
         padding: EdgeInsets.all(16),
+        width: width,
         decoration: BoxDecoration(
           color: isSelected ? Colors.grey[200] : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
+            color: isSelected ? Colors.deepPurple : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: Colors.blue.withOpacity(0.2),
+                color: Colors.deepPurple.withOpacity(0.2),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -50,7 +51,7 @@ class _RoleState extends State<Role> {
           children: [
             Icon(
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-              color: isSelected ? Colors.blue : Colors.grey,
+              color: isSelected ? Color(0xff673AB7) : Colors.grey[400],
             ),
             SizedBox(width: 10),
             Column(
@@ -83,50 +84,68 @@ class _RoleState extends State<Role> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double containerWidth = screenWidth * 0.9; // Adjust the width as needed
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: Column(
-        children: [
-          SizedBox(height: 50),
-          Text(
-            "Choose your Role",
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                buildSelectableContainer("Donor",
-                    "I have something to donate to the needy", "Donor"),
-                buildSelectableContainer(
-                    "Receiver", "I am a charitable organization", "Receiver"),
-                buildSelectableContainer("Volunteer",
-                    "Wanted to help the needy by volunteering", "Volunteer"),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 50),
+            Text(
+              "Choose your Role",
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
-          ),
-          SizedBox(height: 300),                    
-          BasicAppButton(
-            text: 'Continue',
-            onPressed: () {
-              Widget nextPage;
-              if (selectedOption == "Receiver") {
-                nextPage = ReceiversPage();
-              } else if (selectedOption == "Donor") {
-                nextPage = Donarspage();
-              } else {
-                nextPage = VolunteerDetailsPage();
-              }
+            Divider(
+              color: Colors.black,
+              thickness: 1,
+              ),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  buildSelectableContainer(
+                      "Donor",
+                      "I have something to donate to the needy",
+                      "Donor",
+                      containerWidth),
+                  buildSelectableContainer(
+                      "Receiver",
+                      "I am a charitable organization",
+                      "Receiver",
+                      containerWidth),
+                  buildSelectableContainer(
+                      "Volunteer",
+                      "Wanted to help the needy by volunteering",
+                      "Volunteer",
+                      containerWidth),
+                ],
+              ),
+            ),
+            SizedBox(height: 300),
+            BasicAppButton(
+              text: 'Continue',
+              onPressed: () {
+                Widget nextPage;
+                if (selectedOption == "Receiver") {
+                  nextPage = ReceiversPage();
+                } else if (selectedOption == "Donor") {
+                  nextPage = Donarspage();
+                } else {
+                  nextPage = VolunteerDetailsPage();
+                }
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => nextPage,
-                ),
-              );
-            },
-          ),
-        ],
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => nextPage,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
