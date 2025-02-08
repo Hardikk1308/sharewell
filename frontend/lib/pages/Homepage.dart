@@ -4,10 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; 
-import '../auth/login.dart';
+import 'dart:convert';
 import '../constant/App_Colour.dart';
-import '../constant/SideNavgationbar.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -17,7 +15,6 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   User? user;
   File? _image;
   String? _expiryDate;
@@ -26,21 +23,11 @@ class _HomepageState extends State<Homepage> {
   bool _isLoading = false;
   final ImagePicker _picker = ImagePicker();
 
-  final String _apiUrl = "https://your-backend-url.com/analyze-food/"; // Change this to your FastAPI URL
+  final String _apiUrl =
+      "https://9e7f-117-203-246-41.ngrok-free.app/analyze-food/"; // Change this to your FastAPI URL
 
-  @override
-  void initState() {
-    super.initState();
-    user = _auth.currentUser;
-  }
+ 
 
-  void _logout() async {
-    await _auth.signOut();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => Loginpage()),
-    );
-  }
 
   Future<void> _captureImage() async {
     var status = await Permission.camera.request();
@@ -58,7 +45,9 @@ class _HomepageState extends State<Homepage> {
       }
     } else if (status.isPermanentlyDenied) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Camera permission permanently denied. Enable it in settings.")),
+        SnackBar(
+            content: Text(
+                "Camera permission permanently denied. Enable it in settings.")),
       );
       openAppSettings();
     } else {
@@ -84,7 +73,8 @@ class _HomepageState extends State<Homepage> {
         var jsonResponse = json.decode(responseData);
 
         setState(() {
-          _expiryDate = jsonResponse['expiry_date'] ?? "No expiry date detected";
+          _expiryDate =
+              jsonResponse['expiry_date'] ?? "No expiry date detected";
           _freshnessLabel = jsonResponse['freshness'] ?? "Unknown";
           _confidenceScore = jsonResponse['confidence_score'] ?? 0.0;
         });
@@ -94,7 +84,9 @@ class _HomepageState extends State<Homepage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to analyze image. Status: ${response.statusCode}")),
+          SnackBar(
+              content: Text(
+                  "Failed to analyze image. Status: ${response.statusCode}")),
         );
       }
     } catch (e) {
@@ -113,7 +105,6 @@ class _HomepageState extends State<Homepage> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.background,
-        drawer: MyDrawer(logoutCallback: _logout),
         body: Builder(
           builder: (context) => Column(
             children: [
@@ -131,7 +122,8 @@ class _HomepageState extends State<Homepage> {
                     ),
                     Text(
                       'Hi ${user?.displayName ?? "User"}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth/splashscreen 1.dart';
 import 'firebase_options.dart';
+import 'pages/Home_page_donars.dart';
 import 'pages/Homepage.dart';
 
 void main() async {
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
               child: CircularProgressIndicator(),
             );
           } else if (snapshot.data != null) {
-            return const Homepage();
+            return const DonorDashboard();
           } else {
             return SplashScreen();
           }

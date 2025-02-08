@@ -42,7 +42,9 @@ class _VolunteerDetailsPageState extends State<VolunteerDetailsPage> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Volunteer Details'),
+          backgroundColor: AppColors.background,
+          title: const Text('Volunteer Details',
+          ),
         ),
         body: SingleChildScrollView(
           // padding: const EdgeInsets.all(10.0),
@@ -70,27 +72,28 @@ class _VolunteerDetailsPageState extends State<VolunteerDetailsPage> {
                 ),
               ),
               const SizedBox(height: 16),
-      
+
               _buildTextField(
                   "Name", _nameController, TextInputType.text, Icons.person),
               _buildTextField("Email", _emailController,
                   TextInputType.emailAddress, Icons.email),
-              _buildTextField("Phone No.", _phoneController, TextInputType.phone,
-                  Icons.phone),
+              _buildTextField("Phone No.", _phoneController,
+                  TextInputType.phone, Icons.phone),
               _buildTextField("Address", _addressController,
                   TextInputType.streetAddress, Icons.location_on),
-              _buildTextField(
-                  "Pincode", _pincodeController, TextInputType.number, Icons.pin),
-      
+              _buildTextField("Pincode", _pincodeController,
+                  TextInputType.number, Icons.pin),
+
               // City Dropdown
               Padding(
-                padding: const EdgeInsets.only(bottom: 12.0,right: 20,left: 20),
+                padding:
+                    const EdgeInsets.only(bottom: 12.0, right: 20, left: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("City",
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 5),
                     DropdownButtonFormField<String>(
                       value: _selectedCity,
@@ -115,7 +118,7 @@ class _VolunteerDetailsPageState extends State<VolunteerDetailsPage> {
                   ],
                 ),
               ),
-      
+
               const SizedBox(height: 10),
               Center(
                 child: InkWell(
@@ -135,9 +138,11 @@ class _VolunteerDetailsPageState extends State<VolunteerDetailsPage> {
               Center(
                 child: BasicAppButton(
                   onPressed: () {
-                   Navigator.push(context, MaterialPageRoute(builder: (context) => AvailabilityPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AvailabilityPage()));
                   },
-                 
                   text: 'Continue',
                 ),
               ),

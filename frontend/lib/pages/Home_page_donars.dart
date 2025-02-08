@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../auth/login.dart';
 import '../constant/App_Colour.dart';
+import '../constant/SideNavgationbar.dart';
 import 'Donation.dart';
 
 class DonorDashboard extends StatefulWidget {
@@ -12,6 +16,8 @@ class DonorDashboard extends StatefulWidget {
 class _DonorDashboardState extends State<DonorDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -25,10 +31,24 @@ class _DonorDashboardState extends State<DonorDashboard>
     super.dispose();
   }
 
+  void _logout() async {
+    await _auth.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Loginpage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: _scaffoldKey,
+        drawer: MyDrawer(
+          logoutCallback: () {
+            _logout();
+          },
+        ),
         backgroundColor: Colors.white,
         bottomNavigationBar: BottomNavigationBar(
           items: const [
@@ -264,18 +284,23 @@ class _DonorDashboardState extends State<DonorDashboard>
       children: [
         Row(
           children: [
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/images/me.jpg'),
-              radius: 25,
+            IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black, size: 30),
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
             ),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("Hi Hardik",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("You are a Donor", style: TextStyle(color: Colors.grey)),
+              children: [
+                Text(
+                  "You are a Donor",
+                  style: GoogleFonts.bricolageGrotesque(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ],
@@ -318,8 +343,23 @@ Widget _buildDonationHistory() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text("Listing Type: Donation",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      Row(
+        children: [
+          Text("Listing Type: Donation",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Spacer(),
+          TextButton(
+              onPressed: () {},
+              child: Text(
+                "View All",
+                style: TextStyle(
+                    color: Colors.deepPurple,
+                    fontSize: 15,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.w400),
+              )),
+        ],
+      ),
       Card(
         color: AppColors.background,
         elevation: 4,
@@ -409,8 +449,23 @@ Widget _buildCommunitySection() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text("Community",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      Row(
+        children: [
+          Text("Community",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Spacer(),
+          TextButton(
+              onPressed: () {},
+              child: Text(
+                "See All",
+                style: TextStyle(
+                    color: Colors.deepPurple,
+                    fontSize: 15,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.w400),
+              )),
+        ],
+      ),
       Row(
         children: [
           _buildCommunityCard("We visit places to serve people"),
@@ -441,35 +496,45 @@ Widget _buildCommunityCard(String title) {
 
 Widget _buildFAQSection() {
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      ExpansionTile(
-        title: Text(
-          "Who will pick up the food?",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      Text("FAQs", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      Card(
+        elevation: 2,
+        color: AppColors.background,
+        child: ExpansionTile(
+          title: Text(
+            "Who will pick up the food?",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          children: [
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text("NGOs will coordinate pickup."),
+                ))
+          ],
         ),
-        children: [
-          Align(
+      ),
+      Card(
+        color: AppColors.background,
+        elevation: 2,
+        child: ExpansionTile(
+          title: Text(
+            "Can we perform one-time donations?",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          children: [
+            Align(
               alignment: Alignment.centerLeft,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text("NGOs will coordinate pickup."),
-              ))
-        ],
-      ),
-      ExpansionTile(
-        title: Text(
-          "Can we perform one-time donations?",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text("Yes, one-time donations are supported."),
+              ),
+            )
+          ],
         ),
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text("Yes, one-time donations are supported."),
-            ),
-          )
-        ],
       ),
     ],
   );

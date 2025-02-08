@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class BasicAppButton extends StatelessWidget {
   final String text;
@@ -13,7 +14,6 @@ class BasicAppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         elevation: 6,
@@ -25,10 +25,10 @@ class BasicAppButton extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 20,
+        style: GoogleFonts.poppins(
+          fontSize: 19,
           color: Colors.white,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

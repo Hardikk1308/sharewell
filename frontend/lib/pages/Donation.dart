@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' as intl;
 
 import '../constant/App_Colour.dart';
+import 'Homepage.dart';
 
 class DonationListingPage extends StatefulWidget {
   const DonationListingPage({super.key});
@@ -32,7 +34,14 @@ class _DonationListingPageState extends State<DonationListingPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: Text("Listing Type: Donation"),
+        title: Text(
+          "Listing Type: Donation",
+        ),
+        titleTextStyle: GoogleFonts.bricolageGrotesque(
+          fontSize: 25,
+          fontWeight: FontWeight.w600,
+          color: Colors.black,
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -94,6 +103,44 @@ class _DonationListingPageState extends State<DonationListingPage> {
                   "Expiration Date", _expirationDateController, true),
               buildDateTimePicker(
                   "Expiration Time", _expirationTimeController, false),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                'Analyse the food quality and hygiene before listing',
+                style: GoogleFonts.bricolageGrotesque(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                        fontStyle: FontStyle.italic
+
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => Homepage()));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    "Check",
+                    style: GoogleFonts.bricolageGrotesque(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  )),
+                   SizedBox(height: 8,
+                  ),
               Row(
                 children: [
                   Checkbox(
@@ -104,12 +151,19 @@ class _DonationListingPageState extends State<DonationListingPage> {
                       });
                     },
                   ),
+                 
                   Expanded(
                     child: Text(
                       "I assure that the food quality and hygiene has been maintained",
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,  
+                        fontStyle: FontStyle.italic
+                        )
                     ),
                   ),
-                ],  
+                ],
               ),
               SizedBox(height: 16),
               ElevatedButton(
@@ -121,7 +175,6 @@ class _DonationListingPageState extends State<DonationListingPage> {
                   ),
                 ),
                 onPressed: () {
-                  
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Donation Listed Successfully!")),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import '../common/basic_app_buttons.dart';
 import 'Signupdetails/ReceviersPage.dart';
 import 'Signupdetails/DonarsPage.dart';
@@ -59,18 +59,18 @@ class _RoleState extends State<Role> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.black : Colors.black87,
+                 style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                 style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -95,10 +95,13 @@ class _RoleState extends State<Role> {
             SizedBox(height: 50),
             Text(
               "Choose your Role",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              style: GoogleFonts.bricolageGrotesque(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Divider(
-              color: Colors.black,
+              color: Colors.black38,
               thickness: 1,
               ),
             Padding(
@@ -117,7 +120,7 @@ class _RoleState extends State<Role> {
                       containerWidth),
                   buildSelectableContainer(
                       "Volunteer",
-                      "Wanted to help the needy by volunteering",
+                      "Wanted to help the needy people",
                       "Volunteer",
                       containerWidth),
                 ],

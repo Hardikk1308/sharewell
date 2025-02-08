@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class MyDrawer extends StatelessWidget {
+class MyDrawer1 extends StatelessWidget {
   final VoidCallback logoutCallback;
 
-  const MyDrawer({super.key, required this.logoutCallback});
+  const MyDrawer1({super.key, required this.logoutCallback});
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +20,12 @@ class MyDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CircleAvatar(
-                  backgroundImage: AssetImage('assets/images/me.jpg'),
+                  backgroundImage: AssetImage('assets/images/smile.png'),
                   radius: 30,
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  "Hi Hardik",
+                  "Smile Foundation",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -33,7 +33,7 @@ class MyDrawer extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  "Donor",
+                  "Receiver",
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -52,7 +52,7 @@ class MyDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.history),
-            title: const Text('Donation History'),
+            title: const Text('Receiving History'),
             onTap: () {},
           ),
           ListTile(

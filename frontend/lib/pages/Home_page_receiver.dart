@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../auth/login.dart';
 import '../constant/App_Colour.dart';
+import '../constant/Sidenav.dart';
 import 'Donation.dart';
 import 'NearbyResturant.dart';
 
@@ -13,6 +17,8 @@ class ReceiverHomePage extends StatefulWidget {
 class _ReceiverHomePageState extends State<ReceiverHomePage>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -26,49 +32,69 @@ class _ReceiverHomePageState extends State<ReceiverHomePage>
     super.dispose();
   }
 
+  void _logout() async {
+    await _auth.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Loginpage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
-          children: [
-            Image.asset('assets/images/smile.png', height: 40),
-            SizedBox(width: 10),
-            Text("Hi Smile Foundation\nYou are a Receiver",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          ],
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10.0),
-            child: Icon(Icons.settings, color: Colors.black),
+        drawer: MyDrawer1(logoutCallback: () {
+          _logout();
+        }),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.menu, color: Colors.black),
+                onPressed: () {
+                  _scaffoldKey.currentState!.openDrawer();
+                },
+              ),
+              Text("Your are a Receiver",
+                  style: GoogleFonts.bricolageGrotesque(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600)),
+            ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatsCard(),
-            SizedBox(height: 20),
-            _buildTabBar(),
-            SizedBox(height: 20),
-            _buildTabView(),
-            SizedBox(height: 20),
-            _buildFoodDonorsSection(),
-            SizedBox(height: 20),
-            _buildCommunitySection(),
-            SizedBox(height: 20),
-            _buildFAQ(),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: Icon(Icons.settings, color: Colors.black),
+            ),
           ],
         ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStatsCard(),
+              SizedBox(height: 20),
+              _buildTabBar(),
+              SizedBox(height: 20),
+              _buildTabView(),
+              SizedBox(height: 20),
+              _buildFoodDonorsSection(),
+              SizedBox(height: 20),
+              _buildCommunitySection(),
+              SizedBox(height: 20),
+              _buildFAQ(),
+            ],
+          ),
+        ),
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
@@ -207,8 +233,7 @@ class _ReceiverHomePageState extends State<ReceiverHomePage>
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => FoodDonorsListPage()),
+                  MaterialPageRoute(builder: (context) => FoodDonorsListPage()),
                 );
               },
               child: Text(
@@ -391,17 +416,6 @@ class _ReceiverHomePageState extends State<ReceiverHomePage>
             ],
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return BottomNavigationBar(
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
       ],
     );
   }

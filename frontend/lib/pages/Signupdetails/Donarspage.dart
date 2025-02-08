@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../Donarsform/Resturants.dart';
 import '../../Donarsform/individual.dart';
 import '../../common/Cards/Card 1.dart';
@@ -21,7 +22,6 @@ class _DonarspageState extends State<Donarspage> {
         appBar: AppBar(
           title: Center(child: const Text("Donor Type")),
           titleTextStyle: TextStyle(
-            // color: AppColors.primary,
             color: Colors.black,
             fontSize: 25,
             fontWeight: FontWeight.bold,
@@ -65,7 +65,16 @@ class _DonarspageState extends State<Donarspage> {
                   ? RestaurantForm()
                   : selectedType == "Individual"
                       ? IndividualForm()
-                      : const Center(child: Text("Select a Donor Type")),
+                      : Center(
+                          child: Text(
+                            "Select a Donor Type",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black38,
+                            ),
+                          ),
+                        ),
             ),
           ],
         ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../pages/Role.dart';
+import 'login.dart';
+import 'signup.dart';
 
 class SplashScreen1 extends StatelessWidget {
   @override
@@ -49,7 +51,7 @@ class SplashScreen1 extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  SizedBox(height: 70.0),
+                  SizedBox(height: 90.0),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5.0),
                     child: Row(
@@ -59,7 +61,7 @@ class SplashScreen1 extends StatelessWidget {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) => Role(),
+                                pageBuilder: (context, animation, secondaryAnimation) => Signup(),
                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                   return FadeTransition(
                                     opacity: animation,
@@ -90,7 +92,7 @@ class SplashScreen1 extends StatelessWidget {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) => Role(),
+                                pageBuilder: (context, animation, secondaryAnimation) => Signup(),
                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                   return FadeTransition(
                                     opacity: animation,
